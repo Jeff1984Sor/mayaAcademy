@@ -81,6 +81,17 @@ else
 fi
 
 echo "=== 7/8  Reiniciando ==="
+# Reaplica os units do systemd se mudaram no repositório (só os da MayaAcademy).
+BASE="$(dirname "$APP_DIR")"
+for svc in web worker; do
+  NOVO="$(sed "s|__BASE__|$BASE|g; s|__USUARIO__|$(id -un)|g" "deploy/systemd/mayaacademy-$svc@.service")"
+  if [ "$NOVO" != "$(cat "/etc/systemd/system/mayaacademy-$svc@.service" 2>/dev/null)" ]; then
+    echo "$NOVO" | sudo tee "/etc/systemd/system/mayaacademy-$svc@.service" >/dev/null
+    echo "    unit mayaacademy-$svc@ atualizado"
+    UNITS_MUDARAM=1
+  fi
+done
+[ "${UNITS_MUDARAM:-0}" = "1" ] && sudo systemctl daemon-reload
 sudo systemctl restart $SERVICOS
 sleep 4
 systemctl is-active $SERVICOS

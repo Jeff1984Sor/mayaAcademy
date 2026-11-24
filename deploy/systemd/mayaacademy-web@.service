@@ -3,6 +3,8 @@ Description=MayaAcademy - web Django/Gunicorn (%i)
 After=network.target postgresql.service
 
 [Service]
+# Control socket PRÓPRIO: o padrão do Gunicorn (~/.gunicorn/gunicorn.ctl) é compartilhado
+# por todos os sistemas do usuário deploy (o Pilates já usa) — nunca usar o padrão.
 User=__USUARIO__
 Group=__USUARIO__
 WorkingDirectory=__BASE__/%i
@@ -10,6 +12,7 @@ EnvironmentFile=__BASE__/%i/.env
 Environment=DJANGO_SETTINGS_MODULE=config.settings.prod
 ExecStart=__BASE__/%i/.venv/bin/gunicorn config.wsgi:application \
   --bind 127.0.0.1:${WEB_PORTA} --workers 3 --timeout 120 \
+  --control-socket __BASE__/%i/gunicorn.ctl \
   --access-logfile __BASE__/%i/logs/gunicorn-acesso.log --error-logfile __BASE__/%i/logs/gunicorn-erro.log
 Restart=always
 RestartSec=3
