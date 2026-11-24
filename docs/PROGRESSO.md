@@ -38,6 +38,9 @@ Próximo passo: instalar em **homologação** e passar pelo **GATE 2**.
 
 ### Decisões tomadas (com o motivo)
 
+- **24/11: só o DNS de produção** (`academy.mayacorp.com.br`), por decisão do Jefferson. A homologação foi instalada
+  (`/home/deploy/mayaacademy/hml`, porta 10091) mas não tem DNS; o Gate 2 acontece em produção.
+
 - **Hospedagem no servidor do Flicsales.** A especificação falava em "prod2 (GCP)", mas o Jefferson não usa Google.
 - **Padrão da fábrica MayaCorp** (pedido em 24/11): hml → prod, tags `vN`, paleta e shell do MayaJus e auditoria imutável.
 - **Stack mantida em Django**, porque a especificação pede o padrão PilatesFinal/RCA. A fábrica usa FastAPI + Next no MayaJus e no MayaFit. *Ver dúvida 1.*

@@ -8,7 +8,7 @@
 
 | Ambiente | Endereço | Pasta no servidor | Porta web | Banco | Branch |
 |---|---|---|---|---|---|
-| Homologação | `hml-academy.mayacorp.com.br` | `/home/deploy/mayaacademy/hml` | 10091 | `mayaacademy_hml` | `develop` |
+| Homologação | `hml-academy.mayacorp.com.br` (**sem DNS** por decisão de 24/11) | `/home/deploy/mayaacademy/hml` | 10091 | `mayaacademy_hml` | `develop` |
 | Produção | `academy.mayacorp.com.br` | `/home/deploy/mayaacademy/prod` | 10081 | `mayaacademy_prod` | `main` |
 
 **Servidor compartilhado** (o mesmo do Flicsales/MayaJus: `ssh flicsales`, usuário `deploy`, Ubuntu 24.04, PostgreSQL 16).
