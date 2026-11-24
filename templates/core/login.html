@@ -1,0 +1,15 @@
+{% extends "core/_cartao.html" %}
+{% block titulo %}Entrar — MayaAcademy{% endblock %}
+{% block cartao_titulo %}Entrar{% endblock %}
+{% block cartao %}
+  <form method="post" novalidate>
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ next }}">
+    {% include "_form.html" %}
+    <button class="btn w-full">Entrar</button>
+  </form>
+  <div class="mt-4 flex justify-between text-sm">
+    <a href="{% url 'core:senha_recuperar' %}">Esqueci minha senha</a>
+    <a href="{% url 'core:cadastro' %}">Criar conta</a>
+  </div>
+{% endblock %}

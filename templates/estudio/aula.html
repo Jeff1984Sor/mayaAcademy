@@ -1,0 +1,72 @@
+{% extends "estudio/_base.html" %}
+{% block trilha %} › {{ aula.titulo }}{% endblock %}
+{% block estudio %}
+  <div class="mb-6 flex flex-wrap items-start justify-between gap-4">
+    <div>
+      <p class="text-sm suave">{{ aula.modulo.titulo }}</p>
+      <h1>{{ aula.titulo }}</h1>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <a class="btn" href="{% url 'aprendizado:aula' aula.pk %}?voltar={{ request.path|urlencode }}" target="_blank" rel="noopener">▶ Pré-visualizar como aluno</a>
+      <form method="post" action="{% url 'estudio:gerar_audio' 'aula' aula.pk %}"
+            onsubmit="return confirm('Gerar áudio de {{ estimativa.blocos }} bloco(s) (~{{ estimativa.caracteres }} caracteres)?')">
+        {% csrf_token %}<button class="btn-sec" {% if not estimativa.blocos %}disabled title="Áudios em dia"{% endif %}>🎙 Gerar áudios ({{ estimativa.blocos }})</button>
+      </form>
+    </div>
+  </div>
+
+  {% if problemas %}
+    <div class="mb-6 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-700 dark:bg-amber-700/30 dark:text-amber-100" role="alert">
+      <strong>Esta aula ainda não pode ser publicada:</strong> {{ problemas|join:"; " }}.
+      Regra: mínimo 4 blocos, pelo menos 2 interativos, nunca só texto.
+    </div>
+  {% endif %}
+
+  <div class="grid gap-6 lg:grid-cols-3">
+    <section class="lg:col-span-2" aria-labelledby="t-blocos">
+      <h2 id="t-blocos" class="mb-3">Blocos</h2>
+      <ol class="space-y-2" data-reordenar="{% url 'estudio:reordenar' 'blocos' %}" data-pai="{{ aula.pk }}">
+        {% for b in blocos %}
+          <li class="cartao arrastavel flex items-center justify-between gap-3 p-3" draggable="true" data-id="{{ b.pk }}">
+            <a href="{% url 'estudio:bloco' b.pk %}" class="flex min-w-0 items-center gap-3 text-inherit hover:no-underline">
+              <span class="alca" aria-hidden="true">⠿</span>
+              <span class="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-navy-50 text-sm font-bold text-navy-700 dark:bg-dark-700 dark:text-indigo-200 num">{{ forloop.counter }}</span>
+              <span class="min-w-0">
+                <span class="block truncate font-medium text-dark dark:text-white">{{ b.titulo|default:b.get_tipo_display }}</span>
+                <span class="text-xs suave">{{ b.get_tipo_display }}{% if b.interativo %} · interativo{% endif %}</span>
+              </span>
+            </a>
+            <span class="flex flex-none items-center gap-1 text-xs">
+              {% if b.erros %}<span class="selo-erro" title="{{ b.erros|join:'; ' }}">config inválida</span>{% endif %}
+              {% if b.alem_do_pdf %}<span class="selo-alerta">⚠ além do PDF</span>{% endif %}
+              {% if b.tem_narracao %}{% if b.audio_ok %}<span class="selo-ok">🎙 ok</span>{% else %}<span class="selo-neutro">🎙 pendente</span>{% endif %}{% endif %}
+              <form method="post" action="{% url 'estudio:bloco_duplicar' b.pk %}">{% csrf_token %}<button class="btn-sec px-2 py-1" title="Duplicar" aria-label="Duplicar bloco">⧉</button></form>
+              <form method="post" action="{% url 'estudio:bloco_excluir' b.pk %}" onsubmit="return confirm('Excluir este bloco?')">{% csrf_token %}<button class="btn-perigo px-2 py-1" aria-label="Excluir bloco">✕</button></form>
+            </span>
+          </li>
+        {% empty %}
+          <li class="cartao suave">Sem blocos. Adicione abaixo.</li>
+        {% endfor %}
+      </ol>
+
+      <form method="post" action="{% url 'estudio:bloco_novo' aula.pk %}" class="cartao mt-4 flex flex-wrap items-end gap-3">
+        {% csrf_token %}
+        <div class="min-w-[220px] flex-1">
+          <label for="novo-tipo">Novo bloco</label>
+          <select id="novo-tipo" name="tipo">
+            {% for chave, t in tipos.items %}<option value="{{ chave }}">{{ t.rotulo }}{% if t.interativo %} (interativo){% endif %}</option>{% endfor %}
+          </select>
+        </div>
+        <button class="btn">+ Adicionar bloco</button>
+      </form>
+    </section>
+
+    <aside class="cartao">
+      <h2 class="mb-3">Dados da aula</h2>
+      <form method="post" enctype="multipart/form-data" novalidate>{% csrf_token %}{% include "_form.html" %}<button class="btn">Salvar</button></form>
+      <form method="post" action="{% url 'estudio:aula_excluir' aula.pk %}" class="mt-6 border-t border-navy-100 pt-4 dark:border-dark-600" onsubmit="return confirm('Excluir a aula e todos os blocos?')">
+        {% csrf_token %}<button class="btn-perigo">Excluir aula</button>
+      </form>
+    </aside>
+  </div>
+{% endblock %}

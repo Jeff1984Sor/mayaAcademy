@@ -1,0 +1,67 @@
+{% extends "estudio/_base.html" %}
+{% block trilha %} › Importar roteiro{% endblock %}
+{% block estudio %}
+  <h1 class="mb-2">Importar roteiro</h1>
+  <p class="mb-6 text-sm suave">Envie um YAML ou JSON no formato descrito em <code>docs/formato-roteiro.md</code>. O curso é criado sempre como <strong>rascunho</strong>.</p>
+
+  <div class="grid gap-6 lg:grid-cols-3">
+    <form method="post" enctype="multipart/form-data" class="cartao" novalidate>
+      {% csrf_token %}
+      {% include "_form.html" %}
+      <button class="btn">Validar arquivo</button>
+    </form>
+
+    <div class="space-y-6 lg:col-span-2">
+      {% if erro_leitura %}
+        <div class="cartao border-perigo-50 bg-perigo-50 text-perigo-700 dark:bg-perigo-700/30 dark:text-perigo-50" role="alert">
+          <h2>Não foi possível ler {{ nome_arquivo }}</h2>
+          <p class="mt-2 font-mono text-sm">{{ erro_leitura }}</p>
+        </div>
+      {% endif %}
+
+      {% if relatorio %}
+        {% if relatorio.erros %}
+          <section class="cartao" aria-labelledby="t-erros">
+            <h2 id="t-erros" class="mb-3 text-perigo-700 dark:text-perigo-50">{{ relatorio.erros|length }} erro(s) em {{ nome_arquivo }} — nada foi importado</h2>
+            <table class="w-full text-left text-sm">
+              <thead class="text-xs uppercase suave"><tr><th class="py-2 pr-3">Linha</th><th class="py-2 pr-3">Onde</th><th class="py-2">Problema</th></tr></thead>
+              <tbody class="divide-y divide-navy-100 dark:divide-dark-600">
+                {% for e in relatorio.erros %}
+                  <tr><td class="py-2 pr-3 font-mono">{{ e.linha|default:"—" }}</td><td class="py-2 pr-3">{{ e.local }}</td><td class="py-2">{{ e.mensagem }}</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </section>
+        {% endif %}
+        {% if relatorio.avisos %}
+          <section class="cartao bg-amber-50 dark:bg-amber-700/20">
+            <h2 class="mb-2">Avisos</h2>
+            <ul class="list-disc pl-5 text-sm">{% for a in relatorio.avisos %}<li>{% if a.linha %}linha {{ a.linha }}: {% endif %}{{ a.mensagem }}</li>{% endfor %}</ul>
+          </section>
+        {% endif %}
+
+        <section class="cartao" aria-labelledby="t-previa">
+          <h2 id="t-previa" class="mb-1">Pré-visualização</h2>
+          <p class="mb-4 text-sm suave">
+            {% if resumo.titulo %}<strong>{{ resumo.titulo }}</strong> · {% endif %}{% if destino %}em “{{ destino.titulo }}” · {% endif %}
+            {{ resumo.modulos }} módulo(s), {{ resumo.aulas }} aula(s), {{ resumo.blocos }} bloco(s), {{ resumo.questoes }} questão(ões), {{ resumo.personagens }} personagem(ns)
+          </p>
+          <ol class="space-y-3">
+            {% for m in resumo.estrutura %}
+              <li><strong>{{ forloop.counter }}. {{ m.titulo }}</strong>
+                <ul class="ml-5 mt-1 list-disc text-sm">
+                  {% for a in m.aulas %}<li>{{ a.titulo }} <span class="text-xs suave">— {{ a.tipos|join:", " }}</span></li>{% endfor %}
+                </ul>
+              </li>
+            {% endfor %}
+          </ol>
+          {% if relatorio.ok %}
+            <form method="post" action="{% url 'estudio:importar_confirmar' %}" class="mt-6">
+              {% csrf_token %}<button class="btn">✔ Confirmar importação</button>
+            </form>
+          {% endif %}
+        </section>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

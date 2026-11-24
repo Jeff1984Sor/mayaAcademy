@@ -1,0 +1,26 @@
+{% extends "estudio/_base.html" %}
+{% block estudio %}
+  <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+    <h1>Seus cursos</h1>
+    <div class="flex gap-2">
+      <a class="btn-sec" href="{% url 'estudio:importar' %}">⬆ Importar roteiro</a>
+      <a class="btn" href="{% url 'estudio:curso_novo' %}">+ Novo curso</a>
+    </div>
+  </div>
+  {% if cursos %}
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {% for c in cursos %}
+        <a href="{% url 'estudio:curso' c.pk %}" class="cartao block text-inherit hover:border-indigo-400 hover:no-underline">
+          <div class="mb-3 h-2 rounded-full" style="background: linear-gradient(90deg, {{ c.cor_primaria }}, {{ c.cor_secundaria }})"></div>
+          <span class="selo-{{ c.status }}">{{ c.get_status_display }}</span>
+          <h2 class="mt-2 text-dark dark:text-white">{{ c.titulo }}</h2>
+          <p class="mt-1 text-sm suave">{{ c.n_modulos }} módulo(s) · {{ c.n_aulas }} aula(s) · {{ c.n_questoes }} questão(ões) · v{{ c.versao }}</p>
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="cartao text-center">
+      <p class="suave">Nenhum curso ainda. Crie do zero ou importe um roteiro YAML/JSON.</p>
+    </div>
+  {% endif %}
+{% endblock %}

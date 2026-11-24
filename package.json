@@ -1,0 +1,12 @@
+{
+  "name": "mayaacademy",
+  "private": true,
+  "description": "Build de CSS (Tailwind) da MayaAcademy. O player usa CSS próprio em static/css/player.css.",
+  "scripts": {
+    "build:css": "tailwindcss -i static/css/entrada.css -o static/css/app.css --minify",
+    "watch:css": "tailwindcss -i static/css/entrada.css -o static/css/app.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.17"
+  }
+}

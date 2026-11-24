@@ -1,0 +1,63 @@
+{% extends "_raiz.html" %}
+{% load static %}
+{# Shell da área logada no padrão MayaCorp: menu lateral escuro + topbar com busca (Ctrl+K) e tema. #}
+{% block corpo %}
+  {% include "_sidebar.html" with id_sb="sb" classe="sb" %}
+
+  <div id="gaveta-fundo" class="fixed inset-0 z-40 hidden bg-dark/50 backdrop-blur-sm lg:hidden" data-fechar-gaveta></div>
+  <div id="gaveta" class="hidden lg:hidden" aria-hidden="true">
+    {% include "_sidebar.html" with id_sb="sb-gaveta" classe="sb-gaveta" gaveta=True %}
+  </div>
+
+  <header class="topbar">
+    <button type="button" class="grid h-9 w-9 place-items-center rounded-lg suave hover:bg-navy-50 dark:hover:bg-dark-700 lg:hidden" data-abrir-gaveta aria-label="Abrir menu" aria-controls="gaveta" aria-expanded="false">☰</button>
+    <button type="button" data-abrir-paleta class="flex h-9 w-full max-w-md items-center gap-2 rounded-lg border border-navy-100 bg-white/60 px-3 text-sm suave transition hover:border-indigo-400/60 dark:border-dark-600 dark:bg-dark-800/60">
+      <span aria-hidden="true">🔎</span>
+      <span class="flex-1 truncate text-left">Buscar cursos, aulas, telas…</span>
+      <kbd class="hidden rounded border border-navy-100 bg-navy-50 px-1.5 text-[10px] dark:border-dark-600 dark:bg-dark-700 sm:inline">Ctrl K</kbd>
+    </button>
+    <div class="flex-1"></div>
+    <div class="hidden items-center gap-0.5 rounded-lg bg-navy-50 p-0.5 dark:bg-dark-700 md:flex" role="group" aria-label="Tema">
+      <button type="button" class="tema-opcao" data-tema="claro" aria-label="Tema claro" title="Claro">☀</button>
+      <button type="button" class="tema-opcao" data-tema="escuro" aria-label="Tema escuro" title="Escuro">☾</button>
+      <button type="button" class="tema-opcao" data-tema="auto" aria-label="Tema automático" title="Automático">◐</button>
+    </div>
+    <details class="relative">
+      <summary class="flex cursor-pointer list-none items-center gap-2 rounded-lg py-1 pl-1 pr-2 hover:bg-navy-50 dark:hover:bg-dark-700">
+        <span class="grid h-8 w-8 place-items-center rounded-full bg-navy-600 text-xs font-bold text-white ring-2 ring-indigo-400/30 dark:bg-indigo-400 dark:text-dark" aria-hidden="true">{{ user.nome|slice:":1"|upper }}</span>
+        <span class="hidden text-left leading-tight md:block">
+          <span class="block max-w-36 truncate text-sm font-medium">{{ user.get_short_name }}</span>
+          <span class="block max-w-36 truncate text-[11px] suave">{{ user.get_papel_display }}</span>
+        </span>
+      </summary>
+      <div class="absolute right-0 mt-2 w-60 rounded-xl border border-navy-100 bg-white p-1.5 shadow-xl dark:border-dark-600 dark:bg-dark-800">
+        <p class="px-2.5 py-2 text-sm"><strong class="block truncate">{{ user.nome }}</strong><span class="block truncate text-xs suave">{{ user.email }}</span></p>
+        <div class="flex items-center justify-between px-2.5 py-1.5 md:hidden"><span class="text-sm">Tema</span>
+          <span class="flex gap-0.5 rounded-lg bg-navy-50 p-0.5 dark:bg-dark-700">
+            <button type="button" class="tema-opcao" data-tema="claro" aria-label="Tema claro">☀</button>
+            <button type="button" class="tema-opcao" data-tema="escuro" aria-label="Tema escuro">☾</button>
+            <button type="button" class="tema-opcao" data-tema="auto" aria-label="Tema automático">◐</button>
+          </span>
+        </div>
+        <hr class="my-1 border-navy-100 dark:border-dark-600">
+        <form method="post" action="{% url 'core:logout' %}">{% csrf_token %}
+          <button class="paleta-item text-perigo-700 dark:text-perigo-50">⎋ Sair</button>
+        </form>
+      </div>
+    </details>
+  </header>
+
+  <dialog id="paleta" class="w-[min(92vw,560px)] rounded-2xl border border-navy-100 bg-white p-0 text-dark shadow-2xl backdrop:bg-dark/50 dark:border-dark-600 dark:bg-dark-800 dark:text-navy-50" aria-label="Busca rápida" data-busca="{% if user.eh_criador %}{% url 'estudio:busca' %}{% endif %}">
+    <div class="border-b border-navy-100 p-3 dark:border-dark-600">
+      <input type="text" role="combobox" aria-expanded="true" id="paleta-busca" placeholder="Digite para buscar…" autocomplete="off" class="mt-0 border-0 shadow-none focus:ring-0" aria-controls="paleta-lista">
+    </div>
+    <ul id="paleta-lista" role="listbox" class="max-h-[50vh] overflow-y-auto p-2"></ul>
+    <p class="border-t border-navy-100 px-4 py-2 text-[11px] suave dark:border-dark-600">↑↓ para navegar · Enter para abrir · Esc para fechar</p>
+  </dialog>
+
+  <main id="conteudo" class="conteudo-app">
+    <div class="mx-auto w-full max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+      {% block conteudo %}{% endblock %}
+    </div>
+  </main>
+{% endblock %}

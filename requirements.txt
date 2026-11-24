@@ -1,0 +1,15 @@
+Django>=5.2,<5.3
+psycopg[binary]>=3.2
+gunicorn>=23
+celery>=5.4
+redis>=5.0
+python-dotenv>=1.0
+PyYAML>=6.0
+jsonschema>=4.23
+mutagen>=1.47
+Pillow>=11
+requests>=2.32
+
+# testes (rodar no servidor)
+pytest>=8
+pytest-django>=4.9

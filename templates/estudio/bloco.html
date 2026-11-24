@@ -1,0 +1,99 @@
+{% extends "estudio/_base.html" %}
+{% load static %}
+{% block trilha %} › <a href="{% url 'estudio:aula' aula.pk %}">{{ aula.titulo }}</a> › bloco {{ bloco.ordem }}{% endblock %}
+{% block estudio %}
+  <div class="grid gap-6 xl:grid-cols-2">
+    <form method="post" id="form-bloco" class="cartao" novalidate data-previa="{% url 'estudio:bloco_previa' bloco.pk %}">
+      {% csrf_token %}
+      <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <h1>{{ bloco.get_tipo_display }}</h1>
+        {% if bloco.interativo %}<span class="selo-neutro">interativo</span>{% endif %}
+      </div>
+      {% if form.non_field_errors %}<div class="mb-4 rounded-lg bg-perigo-50 p-3 text-sm text-perigo-700">{{ form.non_field_errors }}</div>{% endif %}
+
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div class="campo"><label for="{{ form.tipo.id_for_label }}">Tipo</label>{{ form.tipo }}
+          <p class="ajuda">Trocar o tipo exige ajustar a configuração.</p></div>
+        <div class="campo"><label for="{{ form.titulo.id_for_label }}">Título do bloco</label>{{ form.titulo }}</div>
+      </div>
+
+      <div class="campo">
+        <label for="{{ form.roteiro.id_for_label }}">Roteiro de narração</label>
+        {{ form.roteiro }}
+        <p class="ajuda">Uma fala por linha: <code>@slug: texto</code>. Personagens do curso:
+          {% for p in personagens %}<code>@{{ p.slug }}</code> ({{ p.nome }}){% if not forloop.last %}, {% endif %}{% endfor %}.
+          Use <code>[pausa]</code> ou <code>[pausa 800ms]</code> e <code>*ênfase*</code>.</p>
+        {% if form.roteiro.errors %}<div class="erros">{{ form.roteiro.errors }}</div>{% endif %}
+        <details class="mt-2 text-sm" id="frases-numeradas">
+          <summary class="cursor-pointer suave">Frases numeradas (use o número em "frase" dos visuais)</summary>
+          <ol class="mt-2 space-y-1" start="0"></ol>
+        </details>
+      </div>
+
+      <div class="campo">
+        <label for="{{ form.texto_tela.id_for_label }}">Texto de tela</label>{{ form.texto_tela }}
+        <p class="ajuda">Aparece acima da atividade. Aceita **negrito**, *itálico* e listas com "- ".</p>
+      </div>
+
+      <fieldset class="campo rounded-xl border border-navy-100 p-4 dark:border-dark-600">
+        <legend class="px-1 text-sm font-semibold">Configuração</legend>
+        <div id="editor-schema" class="space-y-3"></div>
+        <details class="mt-3" id="json-bruto" {% if form.config.errors %}open{% endif %}>
+          <summary class="cursor-pointer text-sm suave">Editar JSON bruto</summary>
+          {{ form.config }}
+        </details>
+        {% if form.config.errors %}<div class="erros mt-2" role="alert"><ul class="list-disc pl-5">{% for e in form.config.errors %}<li>{{ e }}</li>{% endfor %}</ul></div>{% endif %}
+      </fieldset>
+
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div class="campo"><label for="{{ form.paginas_origem.id_for_label }}">Páginas de origem (PDF)</label>{{ form.paginas_origem }}
+          {% if form.paginas_origem.errors %}<div class="erros">{{ form.paginas_origem.errors }}</div>{% endif %}</div>
+        <div class="campo pt-6"><label class="flex items-center gap-2">{{ form.alem_do_pdf }} ⚠ Conteúdo além do PDF</label></div>
+      </div>
+
+      <div class="flex flex-wrap gap-2 border-t border-navy-100 pt-4 dark:border-dark-600">
+        <button class="btn" name="salvar">Salvar</button>
+        <button class="btn-sec" name="salvar_voltar">Salvar e voltar</button>
+      </div>
+    </form>
+
+    <div class="space-y-4 xl:sticky xl:top-[calc(var(--tb)+var(--faixa)+1rem)] xl:self-start">
+      <section class="cartao" aria-labelledby="t-previa">
+        <div class="mb-2 flex items-center justify-between">
+          <h2 id="t-previa">Pré-visualização ao vivo</h2>
+          <span id="previa-status" class="text-xs suave" aria-live="polite"></span>
+        </div>
+        <div class="mx-auto overflow-hidden rounded-2xl border border-navy-100 dark:border-dark-600" style="max-width: 430px">
+          <iframe id="previa" title="Pré-visualização do bloco" class="block h-[720px] w-full bg-white" sandbox="allow-scripts allow-same-origin"></iframe>
+        </div>
+        <p class="mt-2 text-xs suave">Largura de celular. Sem salvar: a prévia usa o que está no formulário.</p>
+      </section>
+
+      <section class="cartao" aria-labelledby="t-audio">
+        <h2 id="t-audio" class="mb-2">Áudio</h2>
+        {% if not bloco.tem_narracao %}
+          <p class="text-sm suave">Este bloco não tem narração.</p>
+        {% elif audio_ok %}
+          <audio controls src="{{ bloco.audio.url }}" class="w-full"></audio>
+          <p class="mt-2 text-xs suave">{{ bloco.duracao|floatformat:1 }} s · {{ bloco.caracteres_tts }} caracteres · em dia com o roteiro.</p>
+        {% else %}
+          <p class="text-sm suave">Áudio {% if bloco.audio %}desatualizado (o roteiro ou a voz mudou){% else %}ainda não gerado{% endif %}. A prévia usa legendas cronometradas por estimativa.</p>
+        {% endif %}
+        {% if bloco.tem_narracao %}
+          <form method="post" action="{% url 'estudio:gerar_audio' 'bloco' bloco.pk %}" class="mt-3 flex items-center gap-3">
+            {% csrf_token %}
+            <button class="btn-sec">🎙 Gerar áudio deste bloco</button>
+            <label class="flex items-center gap-1 text-xs"><input type="checkbox" name="forcar" value="1"> forçar</label>
+          </form>
+          <p class="mt-1 text-xs suave">Salve o bloco antes. Sem mudança no roteiro, nada é enviado ao TTS (a não ser com "forçar").</p>
+        {% endif %}
+      </section>
+    </div>
+  </div>
+  {{ schemas|json_script:"schemas-blocos" }}
+{% endblock %}
+{% block scripts %}
+  {{ block.super }}
+  <script src="{% static 'js/estudio/editor-schema.js' %}" defer></script>
+  <script src="{% static 'js/estudio/bloco.js' %}" defer></script>
+{% endblock %}

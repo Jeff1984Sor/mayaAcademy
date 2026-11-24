@@ -1,0 +1,11 @@
+{% extends "core/_cartao.html" %}
+{% block titulo %}Criar conta — MayaAcademy{% endblock %}
+{% block cartao_titulo %}Criar conta{% endblock %}
+{% block cartao %}
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {% include "_form.html" %}
+    <button class="btn w-full">Criar conta</button>
+  </form>
+  <p class="mt-4 text-sm">Já tem conta? <a href="{% url 'core:login' %}">Entrar</a></p>
+{% endblock %}

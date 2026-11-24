@@ -1,0 +1,9 @@
+{% autoescape off %}Olá{% if user.nome %}, {{ user.nome }}{% endif %}!
+
+Recebemos um pedido para criar uma nova senha na MayaAcademy.
+Use o link abaixo (válido por tempo limitado):
+
+{{ protocol }}://{{ domain }}{% url 'core:senha_nova' uidb64=uid token=token %}
+
+Se você não pediu, ignore este e-mail.
+{% endautoescape %}

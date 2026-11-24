@@ -1,0 +1,17 @@
+[Unit]
+Description=MayaAcademy - worker Celery: TTS, PDFs, e-mails (%i)
+After=network.target postgresql.service docker.service
+
+[Service]
+User=__USUARIO__
+Group=__USUARIO__
+WorkingDirectory=__BASE__/%i
+EnvironmentFile=__BASE__/%i/.env
+Environment=DJANGO_SETTINGS_MODULE=config.settings.prod
+ExecStart=__BASE__/%i/.venv/bin/celery -A config worker --loglevel INFO --concurrency 2 \
+  --hostname mayaacademy-%i@%%h
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

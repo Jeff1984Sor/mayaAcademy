@@ -1,0 +1,15 @@
+# Texto sempre com LF no repositório (o servidor é Linux).
+* text=auto eol=lf
+
+# Scripts e configs do servidor: LF obrigatório (um \r quebra o bash/systemd/nginx).
+*.sh text eol=lf
+*.service text eol=lf
+*.template text eol=lf
+
+# Binários
+*.woff2 binary
+*.png binary
+*.jpg binary
+*.mp3 binary
+*.pdf binary
+*.ico binary

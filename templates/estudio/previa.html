@@ -1,0 +1,34 @@
+{% load static %}<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="{% static 'css/fontes.css' %}">
+  <link rel="stylesheet" href="{% static 'css/player.css' %}">
+  <style>
+    body { margin: 0; }
+    .previa-erros { font: 14px system-ui, sans-serif; margin: 1rem; padding: 1rem; border-radius: 12px; background: #FEE2E2; color: #991B1B; }
+    .previa-erros li { margin: .25rem 0; }
+  </style>
+</head>
+<body>
+  {% if erros %}
+    <div class="previa-erros" role="alert">
+      <strong>Corrija para ver a prévia:</strong>
+      <ul>{% for e in erros %}<li>{{ e }}</li>{% endfor %}</ul>
+    </div>
+  {% else %}
+    <div id="player"></div>
+    {{ dados|json_script:"dados-aula" }}
+    <script src="{% static 'vendor/gsap.min.js' %}"></script>
+    <script src="{% static 'vendor/lottie_light.min.js' %}"></script>
+    <script src="{% static 'js/player.bundle.js' %}"></script>
+    <script>
+      window.MAYA_SEM_FOCO = true;
+      MayaPlayer.montarAula(document.getElementById("player"),
+        JSON.parse(document.getElementById("dados-aula").textContent),
+        { semTelaInicial: true, mostrarSelos: true, semFoco: true });
+    </script>
+  {% endif %}
+</body>
+</html>

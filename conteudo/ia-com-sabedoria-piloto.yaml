@@ -1,0 +1,290 @@
+# Aula-piloto (Gate 2): versão genérica de "Limites e alucinações".
+# Todos os nomes, leis, números e estudos citados são FICTÍCIOS, de propósito:
+# a aula ensina justamente a desconfiar deles.
+formato: mayaacademy/v1
+
+curso:
+  titulo: Como usar a IA com sabedoria
+  slug: ia-com-sabedoria
+  subtitulo: O jeito certo de usar inteligência artificial no trabalho, sem cair nas armadilhas
+  descricao: |
+    Um curso prático para qualquer equipe que usa (ou vai usar) ferramentas de IA no dia a dia.
+    Você vai aprender o que a IA faz bem, onde ela erra, como escrever bons pedidos e como
+    proteger informações sensíveis.
+  carga_horaria: 4
+  nivel: iniciante
+  categoria: Inteligência artificial
+  modo_acesso: gratuito
+  nota_minima: 70
+  tentativas: 3
+  questoes_sorteadas: 5
+  cor_primaria: "#1E2D6B"
+  cor_secundaria: "#F5A623"
+
+personagens:
+  - slug: narrador
+    nome: Narrador
+    papel: narrador
+    voz: pt-BR-Neural2-B
+    velocidade: 1.0
+    avatar: coruja
+    cor: "#1A8F5E"
+  - slug: maya
+    nome: Maya
+    papel: mascote
+    voz: pt-BR-Neural2-C
+    velocidade: 1.05
+    tom: 1.0
+    avatar: maya
+    cor: "#7C8FFF"
+
+modulos:
+  - titulo: Limites da IA
+    aulas:
+      - titulo: Limites e alucinações
+        objetivo: Reconhecer quando a IA inventa informações e adotar o hábito de conferir fatos antes de usar.
+        duracao_min: 15
+        xp: 150
+        blocos:
+          - tipo: cena_narrada
+            titulo: O que é alucinação?
+            roteiro: |
+              @maya: Oi! Eu sou a Maya, e hoje a conversa é sobre um dos maiores cuidados com a IA.
+              Sabe quando alguém responde com toda a confiança, mas está completamente errado?
+              @narrador: Com a inteligência artificial isso tem nome: *alucinação*.
+              É quando a IA inventa uma informação e apresenta como se fosse verdade.
+              Pode ser um número, uma data, uma lei, uma citação ou até um livro que nunca existiu.
+              @maya: E o pior: o texto vem bonito, bem escrito, sem nenhum sinal de dúvida.
+              @narrador: Por isso, a regra de ouro desta aula é simples.
+              A IA é ótima para rascunhar, mas quem confere os fatos é você.
+            # frases (índice global): 0 Oi! · 1 Eu sou a Maya… · 2 Sabe quando… · 3 Com a IA… · 4 É quando…
+            # 5 Pode ser… · 6 E o pior… · 7 Por isso… · 8 A IA é ótima…
+            config:
+              personagem: maya
+              fundo: palco
+              visuais:
+                - { frase: 0, tipo: titulo, texto: "Alucinação de IA" }
+                - { frase: 2, tipo: icone, icone: "🤔", texto: "Confiança não é sinônimo de verdade", estado: pensando }
+                - { frase: 4, tipo: cartao, texto: "**Alucinação**: quando a IA inventa uma informação e a apresenta como verdadeira." }
+                - frase: 5
+                  tipo: lista
+                  texto: O que ela pode inventar
+                  itens: [Números e estatísticas, Datas e nomes, "Leis, normas e decisões", Citações e livros]
+                - { frase: 6, tipo: alerta, texto: "O texto inventado vem tão bem escrito quanto o verdadeiro.", estado: alerta }
+                - { frase: 8, tipo: citacao, texto: "A IA rascunha. **Você confere os fatos.**", estado: comemorando }
+
+          - tipo: dialogo
+            titulo: Por que isso acontece?
+            roteiro: |
+              @narrador: Maya, por que uma ferramenta tão avançada inventa coisas?
+              @maya: Porque ela não consulta uma enciclopédia. Ela prevê palavras.
+              A IA aprendeu padrões de milhões de textos e escolhe a continuação mais provável.
+              @narrador: Então ela não sabe se aquilo é verdade?
+              @maya: Exatamente. Ela sabe o que *parece* uma boa resposta.
+              Quando falta informação, ela preenche o buraco com algo que soa plausível.
+              @narrador: E em quais situações isso acontece mais?
+              @maya: Em perguntas muito específicas, números exatos, fontes e referências, e assuntos recentes.
+              São justamente os pontos em que vale redobrar a atenção.
+            config:
+              fundo: estudio
+
+          - tipo: chat_simulado
+            titulo: Uma conversa que parece perfeita
+            roteiro: |
+              @narrador: Veja esta conversa. Repare como a resposta parece confiável.
+            texto_tela: Acompanhe a conversa e preste atenção nas notas em amarelo.
+            config:
+              nome_usuario: Você
+              nome_ia: Assistente de IA
+              mensagens:
+                - de: usuario
+                  texto: Me passe 3 estudos que comprovem que trabalho remoto aumenta a produtividade, com autor e ano.
+                - de: ia
+                  texto: |
+                    Claro! Aqui estão três estudos relevantes:
+                    - **Instituto Nacional de Estudos do Trabalho (2019)**: aumento de 23% na produtividade.
+                    - **Moreira & Albuquerque (2020)**: queda de 31% nas faltas.
+                    - **Relatório Horizonte Digital (2021)**: 9 em cada 10 gestores aprovam o modelo.
+                  nota: Nenhum desses estudos existe. A IA montou nomes, anos e números com cara de verdade.
+                  nota_tipo: alerta
+                - de: usuario
+                  texto: Tem certeza de que esses estudos existem?
+                - de: ia
+                  texto: Peço desculpas. Não consigo confirmar a existência dessas referências. Recomendo buscar estudos em bases acadêmicas confiáveis.
+                  nota: Perguntar diretamente ajuda, mas não substitui conferir na fonte original.
+                  nota_tipo: info
+
+          - tipo: caca_erro
+            titulo: Caça às alucinações
+            config:
+              instrucao: Toque nos trechos que você acha que a IA inventou.
+              contexto: Você pediu à IA um e-mail para a equipe sobre a guarda de documentos. Ela devolveu o texto abaixo. Encontre as 4 alucinações antes de enviar.
+              trechos:
+                - texto: Prezada equipe, segue o resumo pedido sobre a guarda de documentos.
+                - texto: Segundo a Lei Federal nº 99.999/2021, todo contrato deve ser guardado por 50 anos.
+                  erro: true
+                  explicacao: Lei e prazo inventados. A IA criou um número com aparência oficial. Confira sempre a norma na fonte oficial.
+                - texto: Isso vale para contratos físicos e digitais.
+                - texto: "Como disse um famoso guru da administração: “quem guarda papel guarda problema”."
+                  erro: true
+                  explicacao: Citação sem autor verificável. Frases de efeito atribuídas a pessoas famosas são um clássico das alucinações.
+                - texto: Um levantamento recente mostrou que 87% das empresas já eliminaram o papel.
+                  erro: true
+                  explicacao: Estatística sem fonte. Número preciso não é sinônimo de número verdadeiro.
+                - texto: Recomendamos revisar a política interna com o responsável pela área.
+                - texto: A nova regra entra em vigor em 30 de fevereiro.
+                  erro: true
+                  explicacao: Data impossível, fevereiro não tem dia 30. A IA erra até o que parece óbvio.
+                - texto: Qualquer dúvida, fale com a coordenação.
+
+          - tipo: antes_depois
+            titulo: Um pedido que reduz alucinações
+            texto_tela: Arraste a barra para comparar os dois pedidos.
+            config:
+              rotulo_antes: Pedido arriscado
+              rotulo_depois: Pedido cuidadoso
+              antes: Me diga qual é a lei que regula a guarda de documentos e o prazo.
+              depois: |
+                Explique de forma geral como funciona a guarda de documentos em empresas.
+                **Não cite números de leis, prazos ou fontes de que você não tenha certeza.**
+                Quando não souber, diga "não sei" e indique onde eu devo confirmar a informação.
+              comentario: O segundo pedido dá permissão para a IA dizer "não sei" e pede onde confirmar. Isso reduz invenções, mas não elimina. A conferência continua sendo sua.
+
+          - tipo: cenario_ramificado
+            titulo: E agora, o que você faz?
+            config:
+              inicio: prazo
+              nos:
+                - id: prazo
+                  texto: Faltam 20 minutos para enviar um relatório ao seu gestor. A IA produziu um texto ótimo, com duas estatísticas e a frase de um especialista.
+                  escolhas:
+                    - texto: Envio assim mesmo. O texto está ótimo e o prazo está apertado.
+                      tipo: ruim
+                      consequencia: O gestor encaminha o relatório para a diretoria. Uma das estatísticas não existe, e quem assina é você.
+                      vai_para: dia_seguinte
+                    - texto: Peço para a própria IA confirmar se os dados são verdadeiros.
+                      tipo: neutro
+                      consequencia: A IA diz que sim, com toda a confiança. Mas ela pode alucinar de novo. A IA não é fonte de checagem dela mesma.
+                      vai_para: prazo
+                    - texto: Tiro o que não consigo confirmar a tempo e aviso que os números estão em verificação.
+                      tipo: bom
+                      consequencia: Você entrega no prazo sem arriscar sua credibilidade. Os dados confirmados entram na próxima versão.
+                - id: dia_seguinte
+                  texto: No dia seguinte, a diretoria pergunta a fonte da estatística. O que você faz?
+                  escolhas:
+                    - texto: Admito o erro, corrijo o relatório e passo a conferir os dados antes de enviar.
+                      tipo: bom
+                      consequencia: Errar acontece. Corrigir rápido e mudar o processo é o que preserva a confiança.
+                    - texto: Digo que a informação veio da IA, então a culpa não é minha.
+                      tipo: ruim
+                      consequencia: A responsabilidade continua sendo de quem usa e assina o texto. A IA é ferramenta, não autora.
+
+          - tipo: quiz_fixacao
+            titulo: Hora de fixar
+            config:
+              questoes:
+                - enunciado: O que é uma "alucinação" de IA?
+                  alternativas:
+                    - Quando a IA trava e não responde.
+                    - Quando a IA inventa uma informação e a apresenta como verdadeira.
+                    - Quando a IA se recusa a responder um assunto.
+                  correta: 1
+                  explicacao: Alucinação é informação inventada com aparência de verdade, muitas vezes bem escrita e cheia de confiança.
+                - enunciado: Qual destes conteúdos merece mais atenção na conferência?
+                  alternativas:
+                    - Um resumo das ideias gerais de um texto que você mesmo forneceu.
+                    - Sugestões de títulos para uma apresentação.
+                    - Números de leis, estatísticas e citações com autor.
+                  correta: 2
+                  explicacao: Dados específicos e referências são onde a IA mais inventa. Confira sempre na fonte original.
+                - enunciado: A IA disse que os dados que ela mesma gerou estão corretos. Isso basta?
+                  alternativas:
+                    - Sim, ela confirmou.
+                    - Não, a IA pode alucinar de novo; é preciso conferir numa fonte confiável.
+                  correta: 1
+                  explicacao: A IA não é fonte de checagem dela mesma. Confirmação de verdade vem de fontes externas e confiáveis.
+
+questoes:
+  - modulo: 1
+    enunciado: Por que a IA às vezes inventa informações?
+    alternativas:
+      - Porque foi programada para enganar.
+      - Porque prevê as palavras mais prováveis, sem verificar se são verdadeiras.
+      - Porque está conectada a fontes erradas na internet.
+      - Porque o usuário digitou rápido demais.
+    correta: 1
+    explicacao: Modelos de linguagem geram a continuação mais provável. Plausível não é o mesmo que verdadeiro.
+    dificuldade: media
+    uso: prova
+  - modulo: 1
+    enunciado: Qual atitude é mais segura ao receber uma estatística da IA?
+    alternativas:
+      - Usar, se o número parecer razoável.
+      - Pedir para a IA repetir a resposta.
+      - Procurar a fonte original antes de usar.
+      - Arredondar o número para ficar mais confiável.
+    correta: 2
+    explicacao: Estatísticas precisam de fonte verificável. Sem fonte, não use.
+    dificuldade: facil
+    uso: prova
+  - modulo: 1
+    enunciado: Um texto da IA está muito bem escrito e sem nenhum sinal de dúvida. Isso indica que
+    alternativas:
+      - o conteúdo é verdadeiro.
+      - o conteúdo foi revisado por especialistas.
+      - nada sobre a veracidade; a forma não garante o conteúdo.
+    correta: 2
+    explicacao: Alucinações costumam vir tão bem escritas quanto informações corretas.
+    dificuldade: media
+    uso: prova
+  - modulo: 1
+    enunciado: Qual pedido tende a reduzir alucinações?
+    alternativas:
+      - Responda rápido e sem rodeios.
+      - Se não tiver certeza, diga "não sei" e indique onde confirmar.
+      - Invente exemplos se precisar.
+      - Use o máximo de números possível.
+    correta: 1
+    explicacao: Dar permissão para dizer "não sei" e pedir onde confirmar reduz invenções.
+    dificuldade: media
+    uso: prova
+  - modulo: 1
+    enunciado: Você enviou um relatório com um dado inventado pela IA. De quem é a responsabilidade?
+    alternativas:
+      - Da IA.
+      - Da empresa que criou a IA.
+      - De quem usou e assinou o texto.
+    correta: 2
+    explicacao: A IA é ferramenta. A responsabilidade pelo conteúdo é de quem o utiliza.
+    dificuldade: facil
+    uso: prova
+  - modulo: 1
+    enunciado: Em quais situações a IA costuma alucinar mais?
+    alternativas:
+      - Em perguntas gerais e conhecidas.
+      - Em perguntas muito específicas, números exatos, fontes e assuntos recentes.
+      - Apenas quando o texto é longo.
+    correta: 1
+    explicacao: Quanto mais específica a informação, maior o risco de a IA preencher lacunas inventando.
+    dificuldade: media
+    uso: prova
+  - modulo: 1
+    enunciado: A IA cita uma lei com número e ano. O que fazer?
+    alternativas:
+      - Confiar, pois leis têm número oficial.
+      - Conferir a norma na fonte oficial antes de usar.
+      - Trocar o número por outro parecido.
+    correta: 1
+    explicacao: A IA consegue criar números de lei com aparência oficial. Só a fonte oficial confirma.
+    dificuldade: facil
+    uso: prova
+  - modulo: 1
+    enunciado: Para que a IA é especialmente útil, com segurança?
+    alternativas:
+      - Para rascunhar, organizar ideias e reescrever textos que você vai revisar.
+      - Para ser a fonte final de dados e citações.
+      - Para decidir sozinha o que enviar a clientes.
+    correta: 0
+    explicacao: Use a IA como rascunhista; a checagem de fatos e a decisão final são suas.
+    dificuldade: facil
+    uso: prova

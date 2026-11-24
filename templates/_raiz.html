@@ -1,0 +1,35 @@
+{% load static %}<!doctype html>
+<html lang="pt-BR" class="{% if EH_HML %}ambiente-hml{% endif %}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}MayaAcademy{% endblock %}</title>
+  <link rel="icon" href="{% static 'img/favicon.svg' %}" type="image/svg+xml">
+  <link rel="preload" href="{% static 'fonts/dm-sans-latin.woff2' %}" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  {# aplica tema e menu recolhido antes da pintura (sem "piscar") #}
+  <script src="{% static 'js/app/tema.js' %}"></script>
+  {% block head %}{% endblock %}
+</head>
+<body class="min-h-screen">
+  <a href="#conteudo" class="sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-[70] focus:rounded focus:bg-white focus:p-2">Pular para o conteúdo</a>
+  {% if EH_HML %}
+    <div class="fixed inset-x-0 top-0 z-[60] flex h-[22px] items-center justify-center bg-[#c62828] px-2 text-[11px] font-bold tracking-wider text-white">
+      AMBIENTE DE HOMOLOGAÇÃO — dados de teste
+    </div>
+  {% endif %}
+  {% block corpo %}{% endblock %}
+
+  <div id="toasts" class="pointer-events-none fixed bottom-4 right-4 z-[80] flex w-[min(92vw,380px)] flex-col gap-2" aria-live="polite">
+    {% for m in messages %}
+      <div class="toast {% if m.tags == 'error' %}toast-erro{% else %}toast-ok{% endif %}" role="{% if m.tags == 'error' %}alert{% else %}status{% endif %}" data-toast>
+        <span aria-hidden="true">{% if m.tags == 'error' %}⚠️{% else %}✅{% endif %}</span>
+        <span class="flex-1">{{ m }}</span>
+        <button type="button" class="text-dark/40 hover:text-dark dark:text-navy-50/40" data-fechar-toast aria-label="Fechar aviso">✕</button>
+      </div>
+    {% endfor %}
+  </div>
+  <script src="{% static 'js/app/shell.js' %}" defer></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,12 @@
+{% extends "app.html" %}
+{% load static %}
+{% block titulo %}Estúdio — MayaAcademy{% endblock %}
+{% block conteudo %}
+  <nav class="mb-4 text-sm suave" aria-label="Trilha">
+    <a href="{% url 'estudio:painel' %}">Estúdio</a>
+    {% if curso %} › <a href="{% url 'estudio:curso' curso.pk %}">{{ curso.titulo }}</a>{% endif %}
+    {% block trilha %}{% endblock %}
+  </nav>
+  {% block estudio %}{% endblock %}
+{% endblock %}
+{% block scripts %}<script src="{% static 'js/estudio/reordenar.js' %}" defer></script>{% endblock %}

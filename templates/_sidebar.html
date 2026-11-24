@@ -1,0 +1,49 @@
+{% load static %}
+<aside id="{{ id_sb }}" class="{{ classe }}" aria-label="Menu principal">
+  <div class="relative flex h-full flex-col">
+    <div class="pointer-events-none absolute -left-24 -top-24 h-64 w-64 rounded-full bg-indigo-400/25 blur-3xl"></div>
+    <div class="pointer-events-none absolute bottom-0 left-1/2 h-40 w-[140%] -translate-x-1/2 rounded-full bg-indigo-400/10 blur-3xl"></div>
+
+    <div class="relative flex h-[var(--tb)] shrink-0 items-center gap-2.5 border-b border-white/10 px-3.5">
+      <img src="{% static 'img/favicon.svg' %}" alt="" class="h-8 w-8 shrink-0">
+      <div class="sb-rotulo min-w-0 flex-1 leading-tight">
+        <p class="truncate text-sm font-semibold text-white">MayaAcademy</p>
+        <p class="text-[11px] text-navy-50/60">Cursos MayaCorp</p>
+      </div>
+      {% if not gaveta %}
+        <button type="button" class="sb-rotulo grid h-7 w-7 place-items-center rounded-md text-navy-50/60 transition hover:bg-white/10 hover:text-white" data-recolher-menu aria-label="Recolher menu">«</button>
+      {% endif %}
+    </div>
+
+    <nav class="relative flex-1 space-y-5 overflow-y-auto overflow-x-hidden px-2 py-4">
+      {% for g in nav_grupos %}
+        <div>
+          <p class="sb-grupo">{{ g.titulo }}</p>
+          <div class="space-y-0.5">
+            {% for i in g.itens %}
+              {% if i.em_breve %}
+                <span class="sb-item cursor-not-allowed opacity-55 hover:bg-transparent" title="{{ i.rotulo }} · em breve ({{ i.em_breve }})">
+                  <span aria-hidden="true" class="w-5 text-center">{{ i.icone }}</span>
+                  <span class="sb-rotulo flex-1 truncate">{{ i.rotulo }}</span>
+                  <span class="sb-rotulo rounded-md bg-white/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase">em breve</span>
+                </span>
+              {% else %}
+                <a href="{{ i.href }}" class="sb-item {% if i.ativo %}ativo{% endif %}" {% if i.ativo %}aria-current="page"{% endif %} title="{{ i.rotulo }}">
+                  <span aria-hidden="true" class="w-5 text-center">{{ i.icone }}</span>
+                  <span class="sb-rotulo flex-1 truncate">{{ i.rotulo }}</span>
+                </a>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      {% endfor %}
+    </nav>
+
+    <div class="relative shrink-0 border-t border-white/10 p-3 text-center text-[11px] text-navy-50/55">
+      {% if gaveta %}uma solução <strong class="text-white">MayaCorp</strong>{% else %}
+        <span class="sb-rotulo">uma solução <strong class="text-white">MayaCorp</strong></span>
+        <button type="button" class="mx-auto hidden h-9 w-9 place-items-center rounded-lg text-navy-50/60 hover:bg-white/10 hover:text-white [html.sb-recolhido_&]:grid" data-recolher-menu aria-label="Expandir menu">»</button>
+      {% endif %}
+    </div>
+  </div>
+</aside>

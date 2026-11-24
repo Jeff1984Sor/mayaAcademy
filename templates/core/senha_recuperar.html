@@ -1,0 +1,7 @@
+{% extends "core/_cartao.html" %}
+{% block titulo %}Recuperar senha — MayaAcademy{% endblock %}
+{% block cartao_titulo %}Recuperar senha{% endblock %}
+{% block cartao %}
+  <p class="mb-4 text-sm suave">Informe seu e-mail. Se houver uma conta, enviaremos um link para criar uma nova senha.</p>
+  <form method="post">{% csrf_token %}{% include "_form.html" %}<button class="btn w-full">Enviar link</button></form>
+{% endblock %}

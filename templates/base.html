@@ -1,0 +1,24 @@
+{% extends "_raiz.html" %}
+{% load static %}
+{# Layout público (catálogo, login, cadastro). Área logada usa app.html. #}
+{% block corpo %}
+  <header class="border-b border-navy-100 bg-white/90 backdrop-blur dark:border-dark-600 dark:bg-dark/90" style="margin-top: var(--faixa)">
+    <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
+      <a href="{% url 'catalogo:home' %}" class="flex items-center gap-2 font-bold text-dark hover:no-underline dark:text-white">
+        <img src="{% static 'img/favicon.svg' %}" alt="" class="h-8 w-8"> MayaAcademy
+      </a>
+      <nav class="flex items-center gap-3 text-sm" aria-label="Conta">
+        {% if user.is_authenticated %}
+          <a class="btn py-1.5" href="{% url 'core:inicio' %}">Entrar na plataforma</a>
+        {% else %}
+          <a href="{% url 'core:login' %}">Entrar</a>
+          <a href="{% url 'core:cadastro' %}" class="btn py-1.5">Criar conta</a>
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+  <main id="conteudo" class="{% block main_class %}mx-auto max-w-6xl px-4 py-8{% endblock %}">
+    {% block conteudo %}{% endblock %}
+  </main>
+  <footer class="py-8 text-center text-xs suave">MayaAcademy · uma solução <strong>MayaCorp</strong></footer>
+{% endblock %}

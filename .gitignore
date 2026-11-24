@@ -1,0 +1,39 @@
+# Segredos (R5)
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Django
+/media/
+/staticfiles/
+/logs/
+*.sqlite3
+
+# Node / Tailwind
+node_modules/
+static/css/app.css
+
+# Editor / SO
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Player empacotado (gerado por manage.py montar_player)
+static/js/player.bundle.js
+
+# Material-fonte de cursos (PDFs) não vai para o Git
+/*.pdf
+/materiais/
+
+# Gerado pelo deploy
+VERSION

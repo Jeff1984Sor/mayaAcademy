@@ -1,0 +1,30 @@
+# MayaAcademy — __DOMINIO__  (gerado por deploy/instalar.sh; HTTPS acrescentado pelo certbot)
+# Sem `map` global de propósito: outros sites deste servidor podem já declarar variáveis.
+server {
+    listen 80;
+    server_name __DOMINIO__;
+    client_max_body_size 120m;   # PDFs grandes no gerador de cursos (F2.5)
+
+    location /static/ {
+        alias __DIR__/staticfiles/;
+        access_log off;
+        expires 30d;
+        add_header Cache-Control "public";
+    }
+
+    location /media/ {
+        alias __DIR__/media/;
+        access_log off;
+        expires 7d;
+        # áudio: permite avançar/voltar (range requests) — o nginx já suporta por padrão
+    }
+
+    location / {
+        proxy_pass http://127.0.0.1:__WEB__;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 300s;   # download do pacote SCORM é gerado na hora
+    }
+}
