@@ -10,25 +10,24 @@ Formato dos roteiros: [`docs/formato-roteiro.md`](docs/formato-roteiro.md).
 
 O servidor é compartilhado com outros sistemas MayaCorp. Os scripts só acrescentam coisas e nunca mexem no que já existe.
 
-**Primeira vez (por ambiente)**, no servidor, como `deploy`:
+**Primeira vez**, no servidor, como `deploy` (ambiente único: produção):
 
 ```bash
 git clone https://github.com/Jeff1984Sor/mayaAcademy.git /tmp/mayaacademy-instalador
-sudo bash /tmp/mayaacademy-instalador/deploy/instalar.sh hml     # depois, quando aprovado: prod
+sudo bash /tmp/mayaacademy-instalador/deploy/instalar.sh prod
 ```
 
 O instalador confere porta, pasta e banco (aborta se algo já existir). Depois cria o banco e o usuário PostgreSQL próprios, o Redis próprio,
 o `.env`, a `.venv`, o build do CSS e do player, as migrations, os serviços systemd, o site nginx (com `nginx -t`), o cron de backup
 e o primeiro superusuário. Em seguida:
 
-1. DNS: registro A de `hml-academy.mayacorp.com.br` (ou `academy.`) para o IP do servidor.
-2. HTTPS: `sudo certbot --nginx -d hml-academy.mayacorp.com.br`
+1. DNS: registro A de `academy.mayacorp.com.br` para o IP do servidor.
+2. HTTPS: `sudo certbot --nginx -d academy.mayacorp.com.br`
 3. Preencha no `.env` o SMTP, a chave do Google TTS (`TTS_PROVIDER=google`) e a da Anthropic. Depois reinicie os serviços.
 
 **Atualizações:**
 
 ```bash
-cd /home/deploy/mayaacademy/hml && ./deploy/deploy.sh hml      # branch develop
 cd /home/deploy/mayaacademy/prod && ./deploy/deploy.sh prod    # branch main, cria tag vN
 ```
 
@@ -53,7 +52,7 @@ tail -f /home/deploy/mayaacademy/prod/logs/app.log          # também: celery.lo
 - Pela tela: botões "Gerar áudio" no bloco, na aula ou no curso (mostram antes a estimativa de caracteres).
 - Pelo terminal: `.venv/bin/python manage.py gerar_audios_curso ia-com-sabedoria --estimar` e depois sem `--estimar`.
 - Só blocos cujo roteiro ou voz mudou são enviados ao TTS. Use `--forcar` para regerar tudo.
-- Com `TTS_PROVIDER=nulo` não há áudio: o player usa legendas cronometradas (bom para homologação sem custo).
+- Com `TTS_PROVIDER=nulo` não há áudio: o player usa legendas cronometradas (sem custo de TTS).
 
 ## Baixar um curso para outras plataformas
 

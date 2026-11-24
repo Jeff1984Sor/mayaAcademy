@@ -3,7 +3,7 @@
 ## Situação em 24/11/2026
 
 O código das fases **F0, F1 e F2** está pronto e verificado localmente (num ambiente descartável). Ainda **não foi instalado no servidor**.
-Próximo passo: instalar em **homologação** e passar pelo **GATE 2**.
+Próximo passo: instalar em **produção** e passar pelo **GATE 2**.
 
 ### Feito
 
@@ -31,18 +31,18 @@ Próximo passo: instalar em **homologação** e passar pelo **GATE 2**.
 
 ### Falta
 
-- Executar o F0 no servidor (instalar hml, DNS, certbot) → **GATE 1**.
+- Remover a hml do servidor; instalar prod, DNS de `academy.mayacorp.com.br` e certbot → **GATE 1**.
 - **GATE 2 (duro):** o Jefferson aprovar a aula-piloto no celular e no desktop.
 - F2.5 (gerador por PDF): o PDF de teste é "Formação completa em Pilates" (185 páginas, 11 sem texto que vão precisar de OCR). Ele está na raiz do projeto, fora do Git.
 - F3 a F7 conforme a especificação.
 
 ### Decisões tomadas (com o motivo)
 
-- **24/11: só o DNS de produção** (`academy.mayacorp.com.br`), por decisão do Jefferson. A homologação foi instalada
-  (`/home/deploy/mayaacademy/hml`, porta 10091) mas não tem DNS; o Gate 2 acontece em produção.
+- **24/11: sem homologação.** Ambiente único = produção (`academy.mayacorp.com.br`, branch `main`), por decisão do Jefferson.
+  A hml chegou a ser instalada (`/home/deploy/mayaacademy/hml`) e deve ser removida do servidor. O Gate 2 acontece em produção.
 
 - **Hospedagem no servidor do Flicsales.** A especificação falava em "prod2 (GCP)", mas o Jefferson não usa Google.
-- **Padrão da fábrica MayaCorp** (pedido em 24/11): hml → prod, tags `vN`, paleta e shell do MayaJus e auditoria imutável.
+- **Padrão da fábrica MayaCorp** (pedido em 24/11), exceto homologação: tags `vN`, paleta e shell do MayaJus e auditoria imutável.
 - **Stack mantida em Django**, porque a especificação pede o padrão PilatesFinal/RCA. A fábrica usa FastAPI + Next no MayaJus e no MayaFit. *Ver dúvida 1.*
 - **SCORM entrou na v1** (a especificação deixava fora), por causa do pedido de baixar o curso para publicar em várias plataformas.
 - Player em ES modules empacotados num script único, para funcionar em `file://` e dentro de LMS.
@@ -51,8 +51,6 @@ Próximo passo: instalar em **homologação** e passar pelo **GATE 2**.
 ### Dúvidas para o Jefferson
 
 1. **Stack:** seguimos em Django (como a especificação pede) ou o "padrão da fábrica" inclui migrar para FastAPI + Next como no MayaJus?
-2. **Ambientes:** a especificação dizia "só produção", mas o padrão da fábrica é hml antes. Os scripts suportam os dois. Posso instalar hml primeiro?
-3. **Domínio:** `academy.mayacorp.com.br` e `hml-academy.mayacorp.com.br` estão bons? Ainda não têm DNS.
 4. **Mascote:** o nome "Maya" e as cores (Indigo e Teal) estão aprovados?
 5. **Google Cloud TTS:** precisa de uma chave de API (conta Google Cloud só para o TTS). Usamos ela ou prefere outro provedor? Até lá o provedor é `nulo` (legendas sem voz).
 6. **Plataformas de destino do download:** o SCORM atende Moodle, LearnWorlds, TalentLMS e similares. Hotmart e Udemy só aceitam **vídeo**: quer que a gente renderize as aulas em MP4 também?

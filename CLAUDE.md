@@ -8,16 +8,17 @@
 
 | Ambiente | Endereço | Pasta no servidor | Porta web | Banco | Branch |
 |---|---|---|---|---|---|
-| Homologação | `hml-academy.mayacorp.com.br` (**sem DNS** por decisão de 24/11) | `/home/deploy/mayaacademy/hml` | 10091 | `mayaacademy_hml` | `develop` |
-| Produção | `academy.mayacorp.com.br` | `/home/deploy/mayaacademy/prod` | 10081 | `mayaacademy_prod` | `main` |
+| Produção (único) | `academy.mayacorp.com.br` | `/home/deploy/mayaacademy/prod` | 10081 | `mayaacademy_prod` | `main` |
+
+**Sem homologação** (decisão do Jefferson em 24/11/2026). Os scripts ainda aceitam `hml`, mas não use.
 
 **Servidor compartilhado** (o mesmo do Flicsales/MayaJus: `ssh flicsales`, usuário `deploy`, Ubuntu 24.04, PostgreSQL 16).
 Regras: só **acrescentar** (nunca atualizar pacotes, reiniciar serviços alheios ou editar sites nginx de outros sistemas);
 `nginx -t` antes de todo reload. O Redis da porta 6379 é do Evolution: **não usar**. A MayaAcademy tem o próprio
-(container `mayaacademy-redis` em 127.0.0.1:6380; prod usa índices 0/1, hml 2/3). Disco do servidor estava 93% cheio em 11/2026.
+(container `mayaacademy-redis` em 127.0.0.1:6380, índices 0/1).
 
-**Tudo entra primeiro em homologação.** Produção só quando o Jefferson mandar; o deploy de prod cria a tag `vN`.
-Backup do banco antes de toda migration (o `deploy.sh` faz). Nenhum comando destrutivo (`DROP`, `flush`, `migrate zero`)
+Ambiente único = produção, então o cuidado é dobrado: o `deploy.sh` roda os testes antes de reiniciar (se falharem, nada muda),
+faz backup do banco antes de toda migration e cria a tag `vN` (ponto de retorno do `rollback.sh`). Deploy só quando o Jefferson mandar. Nenhum comando destrutivo (`DROP`, `flush`, `migrate zero`)
 sem confirmação explícita. Nenhum dado real de cliente em exemplos/seeds (R6).
 
 ## Stack
@@ -62,7 +63,7 @@ sem confirmação explícita. Nenhum dado real de cliente em exemplos/seeds (R6)
 
 ## Como trabalhar
 
-- Branches: `develop` → hml, `main` → prod, trabalho em `feat/<assunto>`. Nunca force-push em `main`/`develop`.
+- Branch `main` = produção; trabalho em `feat/<assunto>` e merge na `main` quando aprovado. Nunca force-push na `main`.
 - Commits pequenos, em português, dizendo o que muda e por quê.
 - Antes de dar algo como pronto: `python -m pytest -q` verde (testes cobrem N9, N10, importador, permissões, pacote, bundle).
 - Registre o andamento em `docs/PROGRESSO.md` (feito, falta, decisões, dúvidas para o Jefferson).
@@ -77,5 +78,5 @@ npm run build:css                                     # gera static/css/app.css
 python manage.py importar_roteiro conteudo/ia-com-sabedoria-piloto.yaml [--validar] [--curso <slug>]
 python manage.py exportar_roteiro <slug> -o saida.yaml
 python manage.py gerar_audios_curso <slug> [--estimar] [--forcar]
-./deploy/deploy.sh hml|prod     ./deploy/rollback.sh prod v7     ./deploy/backup.sh prod
+./deploy/deploy.sh prod     ./deploy/rollback.sh prod v7     ./deploy/backup.sh prod
 ```
