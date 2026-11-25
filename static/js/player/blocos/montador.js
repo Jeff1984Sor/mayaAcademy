@@ -1,5 +1,14 @@
 // Montar algo peça por peça (ex.: um prompt) com medidor de qualidade.
 
+function embaralhar(lista) {
+  const copia = [...lista];
+  for (let i = copia.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copia[i], copia[j]] = [copia[j], copia[i]];
+  }
+  return copia;
+}
+
 export const montador = {
   montar(corpo, bloco, ctx) {
     const { el, md } = ctx;
@@ -8,6 +17,10 @@ export const montador = {
     const boas = pecas.filter((p) => !p.distrator);
     const pesoTotal = boas.reduce((s, p) => s + p.peso, 0) || 1;
     const escolhidas = [];
+    // em_ordem: as peças certas valem na ordem da config; na tela aparecem embaralhadas.
+    const emOrdem = !!cfg.em_ordem;
+    let errosOrdem = 0;
+    const exibicao = emOrdem ? embaralhar(pecas) : pecas;
 
     const resultado = el("div", { class: "mt-resultado", "aria-live": "polite" });
     const medidor = el("div", { class: "mt-medidor", role: "meter", "aria-valuemin": "0", "aria-valuemax": "100", "aria-label": "Qualidade" },
@@ -40,15 +53,28 @@ export const montador = {
         feedback.innerHTML = `🎉 ${md(cfg.mensagem_final || "Montagem completa!").replace(/^<p>|<\/p>$/g, "")}`;
         ctx.efeitos.confete(corpo.closest(".player") || document.body, 80);
         ctx.efeitos.somAcerto();
-        ctx.concluir({ acertosPrimeira: escolhidas.length === boas.length ? 1 : 0 });
+        ctx.concluir({ acertosPrimeira: escolhidas.length === boas.length && !errosOrdem ? 1 : 0 });
       }
     };
 
-    for (const p of pecas) {
+    for (const p of exibicao) {
       const btn = el("button", { class: "mt-peca", type: "button", "aria-pressed": "false" },
         el("strong", { text: p.rotulo }), el("span", { text: p.texto }));
       btn.addEventListener("click", () => {
         const idx = escolhidas.indexOf(p);
+        if (emOrdem && idx < 0 && !p.distrator) {
+          const proxima = boas[escolhidas.filter((e) => !e.distrator).length];
+          if (proxima !== p) {
+            errosOrdem += 1;
+            ctx.efeitos.erro(btn);
+            feedback.textContent = "✗ Ainda não é a vez desta etapa. Qual vem antes?";
+            return;
+          }
+        }
+        if (emOrdem && idx >= 0 && !p.distrator && escolhidas.filter((e) => !e.distrator).pop() !== p) {
+          feedback.textContent = "Para desfazer, remova primeiro a última etapa colocada.";
+          return;
+        }
         if (idx >= 0) {
           escolhidas.splice(idx, 1);
           btn.setAttribute("aria-pressed", "false");

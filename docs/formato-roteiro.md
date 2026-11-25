@@ -108,7 +108,7 @@ Campos comuns a todos os blocos:
 | `chat_simulado` | `titulo`, `nome_usuario`, `nome_ia`, **`mensagens`** (mín. 2): `{de: usuario/ia/sistema, texto, nota, nota_tipo: alerta/ok/info}` |
 | `antes_depois` | **`rotulo_antes`**, **`rotulo_depois`**, **`antes`**, **`depois`**, `comentario` (aparece depois de comparar) |
 | `arrastar_soltar` | **`instrucao`**, **`categorias`** (2 a 4): `{id, nome}`, **`itens`**: `{texto, categoria (id), feedback}` |
-| `montador` | **`instrucao`**, `objetivo`, **`pecas`**: `{rotulo, texto, peso 0–100, distrator: true/false, feedback}`, `mensagem_final` |
+| `montador` | **`instrucao`**, `objetivo`, **`pecas`**: `{rotulo, texto, peso 0–100, distrator: true/false, feedback}`, `mensagem_final`, `em_ordem` (true: as peças certas têm de ser tocadas na ordem em que aparecem na config; na tela elas aparecem embaralhadas) |
 | `caca_erro` | **`instrucao`**, `contexto`, **`trechos`**: `{texto, erro: true/false, explicacao}`. Todo trecho com erro precisa de explicação. |
 | `cenario_ramificado` | `titulo`, **`inicio`** (id), **`nos`**: `{id, texto, escolhas: [{texto, consequencia, tipo: bom/ruim/neutro, vai_para}]}`. Escolha sem `vai_para`, ou nó sem escolhas, é um final. |
 | `flashcards` | **`cartoes`** (mín. 2): `{frente, verso}` |

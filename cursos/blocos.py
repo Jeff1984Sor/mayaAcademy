@@ -226,6 +226,7 @@ TIPOS = {
                     2,
                 ),
                 "mensagem_final": _TEXTO_OPC,
+                "em_ordem": {"type": "boolean", "description": "Se true, as peças certas precisam ser tocadas na ordem em que aparecem na config (e são mostradas embaralhadas)"},
             },
             ["instrucao", "pecas"],
         ),
