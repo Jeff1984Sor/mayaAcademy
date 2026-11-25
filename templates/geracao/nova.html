@@ -1,6 +1,11 @@
 {% extends "estudio/_base.html" %}
 {% block trilha %} › <a href="{% url 'geracao:lista' %}">Curso a partir de PDF</a> › Novo{% endblock %}
 {% block estudio %}
+  {% if not ia_configurada %}
+    <div class="mb-6 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-700 dark:bg-amber-700/30 dark:text-amber-100" role="alert">
+      ⚠ A IA ainda não está configurada. <a href="{% url 'geracao:config_ia' %}" class="font-semibold underline">Configure a chave e o modelo da OpenAI</a> antes de gerar um curso.
+    </div>
+  {% endif %}
   <h1 class="mb-2">Novo curso a partir de PDF</h1>
   <p class="mb-6 text-sm suave">
     A IA lê o material, mapeia o conteúdo e propõe a ementa. <strong>Nenhuma aula é gerada antes de você aprovar a ementa</strong>,

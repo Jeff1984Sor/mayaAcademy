@@ -1,0 +1,80 @@
+{% extends "estudio/_base.html" %}
+{% load static %}
+{% block trilha %} › Configurar IA{% endblock %}
+{% block estudio %}
+  <h1 class="mb-1">Configurar IA</h1>
+  <p class="mb-6 text-sm suave">A IA da OpenAI escreve as aulas no “Curso a partir de PDF”. Cole a chave, escolha o modelo na lista da sua conta e teste.</p>
+
+  <div class="grid gap-6 lg:grid-cols-3">
+    <form method="post" class="cartao lg:col-span-2" id="form-ia" novalidate
+          data-url-modelos="{% url 'geracao:config_ia_modelos' %}" data-url-testar="{% url 'geracao:config_ia_testar' %}">
+      {% csrf_token %}
+      {% if form.non_field_errors %}<div class="mb-4 rounded-lg bg-perigo-50 p-3 text-sm text-perigo-700" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+
+      <h2 class="mb-3 text-base">1. Chave da API</h2>
+      <div class="campo">
+        <label for="{{ form.chave.id_for_label }}">{{ form.chave.label }}</label>
+        {{ form.chave }}
+        <p class="ajuda">
+          {% if chave_mascarada %}Chave atual: <span class="font-mono">{{ chave_mascarada }}</span> ({{ efetiva.origem }}). Deixe em branco para mantê-la.
+          {% else %}Ainda sem chave. Crie em <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">platform.openai.com › API keys</a> e confira se a conta tem crédito em Billing.{% endif %}
+        </p>
+        {% if form.chave.errors %}<div class="erros" role="alert">{% for e in form.chave.errors %}<p>{{ e }}</p>{% endfor %}</div>{% endif %}
+      </div>
+
+      <h2 class="mb-3 mt-6 text-base">2. Modelo</h2>
+      <div class="campo">
+        <label for="{{ form.modelo.id_for_label }}">{{ form.modelo.label }}</label>
+        <div class="flex flex-wrap gap-2">
+          <input type="text" name="modelo" id="{{ form.modelo.id_for_label }}" value="{{ form.modelo.value|default:'' }}" list="lista-modelos" class="min-w-0 flex-1 font-mono" placeholder="clique em Buscar modelos">
+          <button type="button" class="btn-sec" id="btn-modelos">🔎 Buscar modelos da minha conta</button>
+        </div>
+        <datalist id="lista-modelos"></datalist>
+        <p class="ajuda" id="msg-modelos">Recomendado: um modelo da linha <strong>Sol</strong> (bom texto, custo baixo).</p>
+        <div id="modelos" class="mt-2 hidden max-h-64 overflow-y-auto rounded-lg border border-navy-100 p-1 dark:border-dark-600" role="listbox" aria-label="Modelos disponíveis"></div>
+      </div>
+
+      <h2 class="mb-3 mt-6 text-base">3. Preço (para o painel de custo)</h2>
+      <div class="mb-3 flex flex-wrap gap-2" aria-label="Preencher com o preço da linha">
+        {% for s in sugestoes %}
+          <button type="button" class="btn-sec py-1 text-xs" data-entrada="{{ s.entrada }}" data-saida="{{ s.saida }}" data-preco>{{ s.rotulo }} · US$ {{ s.entrada }} / {{ s.saida }}</button>
+        {% endfor %}
+      </div>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div class="campo"><label for="{{ form.preco_entrada_1m.id_for_label }}">{{ form.preco_entrada_1m.label }}</label>{{ form.preco_entrada_1m }}
+          {% if form.preco_entrada_1m.errors %}<div class="erros">{{ form.preco_entrada_1m.errors }}</div>{% endif %}</div>
+        <div class="campo"><label for="{{ form.preco_saida_1m.id_for_label }}">{{ form.preco_saida_1m.label }}</label>{{ form.preco_saida_1m }}
+          {% if form.preco_saida_1m.errors %}<div class="erros">{{ form.preco_saida_1m.errors }}</div>{% endif %}</div>
+      </div>
+      <p class="ajuda -mt-2 mb-4 text-xs suave">Valores de referência de 25/11/2026. Confira em <a href="https://platform.openai.com/docs/pricing" target="_blank" rel="noopener">platform.openai.com/docs/pricing</a>. O preço só afeta o relatório de custo, não a cobrança.</p>
+
+      <div class="flex flex-wrap items-center gap-2 border-t border-navy-100 pt-4 dark:border-dark-600">
+        <button class="btn">Salvar</button>
+        <button type="button" class="btn-sec" id="btn-testar">⚡ Testar conexão</button>
+        <span id="msg-teste" class="text-sm" aria-live="polite"></span>
+      </div>
+    </form>
+
+    <aside class="space-y-4">
+      <section class="cartao" aria-labelledby="t-sit">
+        <h2 id="t-sit" class="mb-3 text-base">Situação</h2>
+        <dl class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-2 text-sm">
+          <dt class="suave">Chave</dt><dd>{% if efetiva.chave %}<span class="selo-ok">configurada</span>{% else %}<span class="selo-erro">falta</span>{% endif %}</dd>
+          <dt class="suave">Modelo</dt><dd class="break-all font-mono">{{ efetiva.modelo|default:"—" }}</dd>
+          <dt class="suave">Preço</dt><dd class="font-mono">US$ {{ efetiva.preco_entrada_1m|floatformat:"-4" }} / {{ efetiva.preco_saida_1m|floatformat:"-4" }}</dd>
+          <dt class="suave">Origem</dt><dd>{{ efetiva.origem }}</dd>
+          {% if salvo %}<dt class="suave">Atualizado</dt><dd class="text-xs">{{ salvo.atualizado_em|date:"d/m/Y H:i" }}{% if salvo.atualizado_por %} por {{ salvo.atualizado_por.get_short_name }}{% endif %}</dd>{% endif %}
+        </dl>
+      </section>
+      <section class="cartao text-sm" aria-labelledby="t-dicas">
+        <h2 id="t-dicas" class="mb-2 text-base">Quanto custa?</h2>
+        <p class="suave">Um curso de ~185 páginas usa por volta de 150 mil tokens de entrada e 30–60 mil de saída. Com um modelo Sol, isso dá cerca de <strong>US$ 1 a 3 por curso</strong>. Cada chamada aparece no relatório da geração.</p>
+        <p class="mt-2 suave">🔒 A chave fica criptografada no banco e não volta inteira para a tela.</p>
+      </section>
+    </aside>
+  </div>
+{% endblock %}
+{% block scripts %}
+  {{ block.super }}
+  <script src="{% static 'js/estudio/config-ia.js' %}" defer></script>
+{% endblock %}

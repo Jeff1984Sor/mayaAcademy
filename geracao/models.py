@@ -156,3 +156,28 @@ class ChamadaLLM(models.Model):
         ordering = ["criado_em", "id"]
         verbose_name = "chamada à IA"
         verbose_name_plural = "chamadas à IA"
+
+
+class ConfiguracaoIA(models.Model):
+    """Configuração da IA feita pela tela (Estúdio › Configurar IA). Tem prioridade sobre o .env.
+
+    A chave da API fica criptografada (Fernet, derivada do SECRET_KEY) e nunca volta inteira para a tela.
+    """
+
+    chave_cifrada = models.TextField(blank=True)
+    modelo = models.CharField(max_length=100, blank=True)
+    preco_entrada_1m = models.DecimalField("preço de entrada (US$ por 1M tokens)", max_digits=8, decimal_places=4, default=0)
+    preco_saida_1m = models.DecimalField("preço de saída (US$ por 1M tokens)", max_digits=8, decimal_places=4, default=0)
+    atualizado_em = models.DateTimeField(auto_now=True)
+    atualizado_por = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+
+    class Meta:
+        verbose_name = "configuração da IA"
+        verbose_name_plural = "configuração da IA"
+
+    def __str__(self):
+        return f"IA: {self.modelo or '(sem modelo)'}"
+
+    @classmethod
+    def atual(cls):
+        return cls.objects.filter(pk=1).first()

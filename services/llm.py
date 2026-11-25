@@ -34,24 +34,41 @@ class RespostaLLM:
         return custo_usd(self.tokens_entrada, self.tokens_saida)
 
 
+def _precos():
+    """Preço por 1M tokens: o salvo na tela (Estúdio › Configurar IA) ou, sem ele, o do .env."""
+    try:
+        from geracao.config_ia import atual
+
+        c = atual()
+        return Decimal(str(c.preco_entrada_1m)), Decimal(str(c.preco_saida_1m))
+    except Exception:  # noqa: BLE001 — banco indisponível (ex.: import antes das migrations)
+        return Decimal(str(settings.LLM_PRECO_ENTRADA_1M)), Decimal(str(settings.LLM_PRECO_SAIDA_1M))
+
+
 def custo_usd(tokens_entrada, tokens_saida):
-    entrada = Decimal(str(settings.LLM_PRECO_ENTRADA_1M)) * tokens_entrada / 1_000_000
-    saida = Decimal(str(settings.LLM_PRECO_SAIDA_1M)) * tokens_saida / 1_000_000
+    preco_entrada, preco_saida = _precos()
+    entrada = preco_entrada * tokens_entrada / 1_000_000
+    saida = preco_saida * tokens_saida / 1_000_000
     return (entrada + saida).quantize(Decimal("0.0001"))
 
 
 class OpenAILLM:
     nome = "openai"
 
-    def __init__(self):
-        if not settings.OPENAI_API_KEY:
-            raise ErroLLM("OPENAI_API_KEY não configurada no .env do servidor.")
-        if not settings.OPENAI_MODEL:
-            raise ErroLLM("OPENAI_MODEL não configurado no .env do servidor.")
+    def __init__(self, chave=None, modelo=None):
+        from geracao.config_ia import atual
+
+        config = atual()
+        chave = chave or config.chave
+        modelo = modelo or config.modelo
+        if not chave:
+            raise ErroLLM("A chave da OpenAI não foi cadastrada. Vá em Estúdio › Configurar IA.")
+        if not modelo:
+            raise ErroLLM("Nenhum modelo da OpenAI escolhido. Vá em Estúdio › Configurar IA.")
         from openai import OpenAI
 
-        self.modelo = settings.OPENAI_MODEL
-        self.cliente = OpenAI(api_key=settings.OPENAI_API_KEY, timeout=900, max_retries=3)
+        self.modelo = modelo
+        self.cliente = OpenAI(api_key=chave, timeout=900, max_retries=3)
 
     def gerar_json(self, mensagens, schema, nome, contexto=None):
         import openai
@@ -67,9 +84,11 @@ class OpenAILLM:
                 },
             )
         except openai.AuthenticationError as erro:
-            raise ErroLLM("Chave da OpenAI inválida (OPENAI_API_KEY).") from erro
+            raise ErroLLM("A OpenAI recusou a chave (inválida ou revogada). Confira em Estúdio › Configurar IA.") from erro
         except openai.NotFoundError as erro:
-            raise ErroLLM(f"Modelo '{self.modelo}' não encontrado na sua conta OpenAI (OPENAI_MODEL).") from erro
+            raise ErroLLM(f"O modelo '{self.modelo}' não existe ou não está liberado na sua conta OpenAI.") from erro
+        except openai.PermissionDeniedError as erro:
+            raise ErroLLM("A chave não tem permissão para usar este modelo.") from erro
         except openai.RateLimitError as erro:
             raise ErroLLM("Limite de uso da OpenAI atingido (saldo ou taxa). Tente de novo mais tarde.") from erro
         except openai.BadRequestError as erro:

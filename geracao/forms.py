@@ -64,3 +64,23 @@ class NovaGeracaoForm(forms.ModelForm):
             raise forms.ValidationError(f"Os PDFs somam {total} páginas; o limite é {limite}. Divida o material.")
         self.total_paginas = total
         return arquivos
+
+
+class ConfiguracaoIAForm(forms.Form):
+    chave = forms.CharField(
+        label="Chave da API da OpenAI", required=False, strip=True,
+        widget=forms.PasswordInput(attrs={"autocomplete": "off", "placeholder": "sk-..."}, render_value=False),
+        help_text="Crie em platform.openai.com › API keys. Deixe em branco para manter a chave atual.",
+    )
+    modelo = forms.CharField(label="Modelo", max_length=100, required=False,
+                             help_text="Clique em “Buscar modelos da minha conta” para escolher da lista.")
+    preco_entrada_1m = forms.DecimalField(label="Preço de entrada (US$ por 1 milhão de tokens)", min_value=0,
+                                          max_digits=8, decimal_places=4)
+    preco_saida_1m = forms.DecimalField(label="Preço de saída (US$ por 1 milhão de tokens)", min_value=0,
+                                        max_digits=8, decimal_places=4)
+
+    def clean_chave(self):
+        chave = self.cleaned_data.get("chave") or ""
+        if chave and (not chave.startswith("sk-") or len(chave) < 20 or " " in chave):
+            raise forms.ValidationError("Isso não parece uma chave da OpenAI (começa com sk- e não tem espaços).")
+        return chave

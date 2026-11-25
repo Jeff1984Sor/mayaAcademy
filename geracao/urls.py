@@ -6,6 +6,9 @@ app_name = "geracao"
 
 urlpatterns = [
     path("", views.lista, name="lista"),
+    path("configurar-ia/", views.config_ia, name="config_ia"),
+    path("configurar-ia/modelos/", views.config_ia_modelos, name="config_ia_modelos"),
+    path("configurar-ia/testar/", views.config_ia_testar, name="config_ia_testar"),
     path("novo/", views.nova, name="nova"),
     path("<int:pk>/", views.detalhe, name="detalhe"),
     path("<int:pk>/situacao/", views.situacao, name="situacao"),

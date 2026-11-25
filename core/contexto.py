@@ -12,6 +12,7 @@ NAV = [
             {"rotulo": "Importar roteiro", "icone": "⬆", "url": "estudio:importar", "prefixo": "/estudio/importar/"},
             {"rotulo": "Curso a partir de PDF", "icone": "📄", "url": "geracao:lista", "prefixo": "/estudio/pdf/"},
             {"rotulo": "Relatórios", "icone": "📊", "url": "estudio:relatorios", "prefixo": "/estudio/relatorios/"},
+            {"rotulo": "Configurar IA", "icone": "🤖", "url": "geracao:config_ia", "prefixo": "/estudio/pdf/configurar-ia/"},
         ],
     },
     {

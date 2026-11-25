@@ -187,3 +187,61 @@ def test_custo_calculado_pelos_precos_do_env():
 def test_aluno_nao_acessa_gerador(client, aluno):
     client.force_login(aluno)
     assert client.get(reverse("geracao:lista")).status_code in (302, 403)
+
+
+# --- Configurar IA pela tela ------------------------------------------------------------
+
+def test_config_ia_pela_tela_cifra_a_chave_e_vale_mais_que_o_env(logado, settings):
+    from geracao import config_ia
+    from geracao.models import ConfiguracaoIA
+
+    settings.OPENAI_API_KEY = "sk-do-env-0000000000000"
+    settings.OPENAI_MODEL = "modelo-do-env"
+    r = logado.post(reverse("geracao:config_ia"), {
+        "chave": "sk-teste-1234567890abcdef", "modelo": "gpt-6.1-sol", "preco_entrada_1m": "2", "preco_saida_1m": "10",
+    })
+    assert r.status_code == 302
+    salvo = ConfiguracaoIA.atual()
+    assert "sk-teste" not in salvo.chave_cifrada  # criptografada
+    c = config_ia.atual()
+    assert (c.chave, c.modelo, c.origem) == ("sk-teste-1234567890abcdef", "gpt-6.1-sol", "tela")
+    assert AuditLog.objects.filter(acao="config_ia_alterada").exists()
+    tela = logado.get(reverse("geracao:config_ia")).content.decode()
+    assert "sk-tes…cdef" in tela and "sk-teste-1234567890abcdef" not in tela
+    # salvar de novo sem chave mantém a anterior
+    logado.post(reverse("geracao:config_ia"), {"chave": "", "modelo": "outro", "preco_entrada_1m": "1", "preco_saida_1m": "5"})
+    assert config_ia.atual().chave == "sk-teste-1234567890abcdef"
+    # o custo passa a usar o preço da tela
+    assert float(RespostaLLM({}, 1_000_000, 1_000_000, "m", 1).custo_usd) == pytest.approx(6.0)
+
+
+def test_config_ia_rejeita_chave_estranha(logado):
+    r = logado.post(reverse("geracao:config_ia"), {"chave": "minha senha", "modelo": "x", "preco_entrada_1m": "1", "preco_saida_1m": "1"})
+    assert r.status_code == 200 and "não parece uma chave" in r.content.decode()
+
+
+def test_listar_modelos_filtra_e_marca_sugestao(logado, monkeypatch):
+    from geracao import config_ia
+
+    class _M:
+        def __init__(self, i):
+            self.id = i
+
+    class _Cliente:
+        def __init__(self, **kw):
+            self.models = self
+
+        def list(self):
+            return type("R", (), {"data": [_M("gpt-6.1-sol"), _M("gpt-6-luna"), _M("gpt-realtime"), _M("text-embedding-3")]})()
+
+    monkeypatch.setattr("openai.OpenAI", _Cliente)
+    r = logado.post(reverse("geracao:config_ia_modelos"), json.dumps({"chave": "sk-x-123456789012345"}), content_type="application/json")
+    ids = [m["id"] for m in r.json()["modelos"]]
+    assert ids == ["gpt-6-luna", "gpt-6.1-sol"]
+    assert config_ia.sugestao_para("gpt-6.1-sol")["entrada"] == "2"
+
+
+def test_gerador_avisa_quando_ia_nao_configurada(logado, settings):
+    settings.LLM_PROVIDER = "openai"
+    settings.OPENAI_API_KEY = ""
+    assert "IA ainda não está configurada" in logado.get(reverse("geracao:lista")).content.decode()

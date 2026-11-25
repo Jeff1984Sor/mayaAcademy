@@ -16,9 +16,18 @@ from .paginas import PaginasInvalidas, compactar, expandir
 from .tasks import gerar_aula_task, preparar_geracao_task
 
 
+def _ia_configurada():
+    from django.conf import settings
+
+    from .config_ia import atual
+
+    return settings.LLM_PROVIDER != "openai" or atual().completa
+
+
 @criador_required
 def lista(request):
-    return render(request, "geracao/lista.html", {"geracoes": Geracao.objects.select_related("curso")[:50]})
+    return render(request, "geracao/lista.html", {"geracoes": Geracao.objects.select_related("curso")[:50],
+                                                   "ia_configurada": _ia_configurada()})
 
 
 @criador_required
@@ -38,7 +47,7 @@ def nova(request):
         preparar_geracao_task.delay(geracao.pk)
         messages.success(request, "PDF recebido. A leitura e a proposta de ementa rodam em segundo plano.")
         return redirect("geracao:detalhe", geracao.pk)
-    return render(request, "geracao/nova.html", {"form": form})
+    return render(request, "geracao/nova.html", {"form": form, "ia_configurada": _ia_configurada()})
 
 
 def _ementa_para_tela(ementa):
@@ -156,3 +165,96 @@ def trecho_bloco(request, pk):
     paginas = geracao.paginas.filter(numero__in=bloco.paginas_origem) if geracao else []
     return render(request, "geracao/trecho.html", {"bloco": bloco, "geracao": geracao, "paginas": paginas,
                                                     "curso": bloco.aula.modulo.curso})
+
+
+# --- configuração da IA (tela no lugar do .env) ------------------------------------
+
+@criador_required
+def config_ia(request):
+    from . import config_ia as cfg
+    from .forms import ConfiguracaoIAForm
+    from .models import ConfiguracaoIA
+
+    salvo = ConfiguracaoIA.atual()
+    efetiva = cfg.atual()
+    inicial = {
+        "modelo": efetiva.modelo,
+        "preco_entrada_1m": efetiva.preco_entrada_1m,
+        "preco_saida_1m": efetiva.preco_saida_1m,
+    }
+    form = ConfiguracaoIAForm(request.POST or None, initial=inicial)
+    if request.method == "POST" and form.is_valid():
+        d = form.cleaned_data
+        obj = salvo or ConfiguracaoIA(pk=1)
+        if d["chave"]:
+            obj.chave_cifrada = cfg.cifrar(d["chave"])
+        obj.modelo = (d["modelo"] or "").strip()
+        obj.preco_entrada_1m = d["preco_entrada_1m"]
+        obj.preco_saida_1m = d["preco_saida_1m"]
+        obj.atualizado_por = request.user
+        obj.save()
+        AuditLog.registrar(request, "config_ia_alterada", obj, "Configuração da IA salva pela tela",
+                           modelo=obj.modelo, chave_trocada=bool(d["chave"]),
+                           precos=[str(obj.preco_entrada_1m), str(obj.preco_saida_1m)])
+        messages.success(request, "Configuração da IA salva." + ("" if obj.modelo else " Falta escolher o modelo."))
+        return redirect("geracao:config_ia")
+    return render(request, "geracao/config_ia.html", {
+        "form": form,
+        "efetiva": efetiva,
+        "chave_mascarada": cfg.mascarar(efetiva.chave),
+        "salvo": salvo,
+        "sugestoes": cfg.SUGESTOES_PRECO,
+    })
+
+
+def _chave_da_requisicao(request):
+    from . import config_ia as cfg
+
+    try:
+        corpo = json.loads(request.body or b"{}")
+    except json.JSONDecodeError:
+        corpo = {}
+    return (corpo.get("chave") or "").strip() or cfg.atual().chave, corpo
+
+
+@criador_required
+@require_POST
+def config_ia_modelos(request):
+    """Lista os modelos da conta (usa a chave digitada, se houver, ou a salva)."""
+    import openai
+
+    from . import config_ia as cfg
+
+    chave, _ = _chave_da_requisicao(request)
+    if not chave:
+        return JsonResponse({"ok": False, "erro": "Cole a chave da API primeiro."}, status=400)
+    try:
+        modelos = cfg.listar_modelos(chave)
+    except openai.AuthenticationError:
+        return JsonResponse({"ok": False, "erro": "A OpenAI recusou a chave (inválida ou revogada)."}, status=400)
+    except openai.APIConnectionError:
+        return JsonResponse({"ok": False, "erro": "Sem conexão com a OpenAI. Tente de novo."}, status=502)
+    except openai.APIError as erro:
+        return JsonResponse({"ok": False, "erro": f"A OpenAI respondeu com erro: {erro}"}, status=502)
+    return JsonResponse({"ok": True, "modelos": [
+        {"id": m, "sugestao": cfg.sugestao_para(m)} for m in modelos
+    ]})
+
+
+@criador_required
+@require_POST
+def config_ia_testar(request):
+    """Chamada mínima com saída estruturada: confirma chave, modelo e preço."""
+    from services.llm import ErroLLM, OpenAILLM
+
+    chave, corpo = _chave_da_requisicao(request)
+    modelo = (corpo.get("modelo") or "").strip() or None
+    schema = {"type": "object", "properties": {"mensagem": {"type": "string"}}, "required": ["mensagem"],
+              "additionalProperties": False}
+    try:
+        r = OpenAILLM(chave=chave or None, modelo=modelo).gerar_json(
+            [{"role": "user", "content": "Responda com uma saudação curta em português."}], schema, "teste")
+    except ErroLLM as erro:
+        return JsonResponse({"ok": False, "erro": str(erro)}, status=400)
+    return JsonResponse({"ok": True, "resposta": r.dados.get("mensagem", ""), "modelo": r.modelo,
+                         "tokens": [r.tokens_entrada, r.tokens_saida], "segundos": round(r.duracao_s, 1)})

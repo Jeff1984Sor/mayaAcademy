@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import AulaGerada, ChamadaLLM, Geracao
+from .models import AulaGerada, ChamadaLLM, ConfiguracaoIA, Geracao
 
 
 class ChamadaInline(admin.TabularInline):
@@ -22,3 +22,9 @@ class GeracaoAdmin(admin.ModelAdmin):
 class AulaGeradaAdmin(admin.ModelAdmin):
     list_display = ["__str__", "geracao", "status", "tentativas"]
     list_filter = ["status"]
+
+
+@admin.register(ConfiguracaoIA)
+class ConfiguracaoIAAdmin(admin.ModelAdmin):
+    list_display = ["modelo", "preco_entrada_1m", "preco_saida_1m", "atualizado_em", "atualizado_por"]
+    exclude = ["chave_cifrada"]  # a chave só é editada pela tela (Estúdio › Configurar IA)
