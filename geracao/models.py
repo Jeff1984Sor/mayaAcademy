@@ -168,6 +168,12 @@ class ConfiguracaoIA(models.Model):
     modelo = models.CharField(max_length=100, blank=True)
     preco_entrada_1m = models.DecimalField("preço de entrada (US$ por 1M tokens)", max_digits=8, decimal_places=4, default=0)
     preco_saida_1m = models.DecimalField("preço de saída (US$ por 1M tokens)", max_digits=8, decimal_places=4, default=0)
+    # Narração (TTS). Vazio = vale o TTS_PROVIDER do .env.
+    tts_provedor = models.CharField("voz da narração", max_length=20, blank=True,
+                                    choices=[("nulo", "Desligada (só legendas)"), ("openai", "OpenAI")])
+    tts_modelo = models.CharField("modelo de voz", max_length=60, default="gpt-4o-mini-tts")
+    voz_narrador = models.CharField(max_length=30, default="cedar")
+    voz_mascote = models.CharField(max_length=30, default="marin")
     atualizado_em = models.DateTimeField(auto_now=True)
     atualizado_por = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
 

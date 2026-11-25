@@ -7,7 +7,7 @@
 
   <div class="grid gap-6 lg:grid-cols-3">
     <form method="post" class="cartao lg:col-span-2" id="form-ia" novalidate
-          data-url-modelos="{% url 'geracao:config_ia_modelos' %}" data-url-testar="{% url 'geracao:config_ia_testar' %}">
+          data-url-modelos="{% url 'geracao:config_ia_modelos' %}" data-url-testar="{% url 'geracao:config_ia_testar' %}" data-url-amostra="{% url 'geracao:config_ia_amostra_voz' %}">
       {% csrf_token %}
       {% if form.non_field_errors %}<div class="mb-4 rounded-lg bg-perigo-50 p-3 text-sm text-perigo-700" role="alert">{{ form.non_field_errors }}</div>{% endif %}
 
@@ -47,6 +47,18 @@
           {% if form.preco_saida_1m.errors %}<div class="erros">{{ form.preco_saida_1m.errors }}</div>{% endif %}</div>
       </div>
       <p class="ajuda -mt-2 mb-4 text-xs suave">Valores de referência de 25/11/2026. Confira em <a href="https://platform.openai.com/docs/pricing" target="_blank" rel="noopener">platform.openai.com/docs/pricing</a>. O preço só afeta o relatório de custo, não a cobrança.</p>
+
+      <h2 class="mb-3 mt-6 text-base">4. Narração das aulas (voz)</h2>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div class="campo"><label for="{{ form.tts_provedor.id_for_label }}">{{ form.tts_provedor.label }}</label>{{ form.tts_provedor }}
+          <p class="ajuda">Com a voz da OpenAI, cada frase é narrada e sincronizada com as animações. Desligada, o player mostra só as legendas.</p></div>
+        <div class="campo"><label for="{{ form.tts_modelo.id_for_label }}">{{ form.tts_modelo.label }}</label>{{ form.tts_modelo }}<p class="ajuda">{{ form.tts_modelo.help_text }}</p></div>
+        <div class="campo"><label for="{{ form.voz_narrador.id_for_label }}">{{ form.voz_narrador.label }}</label>
+          <div class="flex gap-2">{{ form.voz_narrador }}<button type="button" class="btn-sec shrink-0" data-ouvir="voz_narrador" title="Ouvir uma amostra desta voz">▶ Ouvir</button></div></div>
+        <div class="campo"><label for="{{ form.voz_mascote.id_for_label }}">{{ form.voz_mascote.label }}</label>
+          <div class="flex gap-2">{{ form.voz_mascote }}<button type="button" class="btn-sec shrink-0" data-ouvir="voz_mascote" title="Ouvir uma amostra desta voz">▶ Ouvir</button></div></div>
+      </div>
+      <p class="ajuda -mt-2 mb-4 text-xs suave">Vozes recomendadas para português: <strong>marin</strong> e <strong>cedar</strong>. Uma voz escolhida no próprio personagem (Estúdio › curso › Personagens) vale mais que esta. Custo aproximado: US$ 0,015 por minuto de áudio.</p>
 
       <div class="flex flex-wrap items-center gap-2 border-t border-navy-100 pt-4 dark:border-dark-600">
         <button class="btn">Salvar</button>

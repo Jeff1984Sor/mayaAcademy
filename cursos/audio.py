@@ -55,7 +55,8 @@ def gerar_audio_bloco(bloco, forcar=False, provedor=None, personagens=None):
         p = personagens[fala["personagem"]]
         ssml = tts.montar_ssml(fala["frases"])
         total_chars += len(ssml)
-        mp3, marcas = provedor.sintetizar(ssml, p.voz_nome, p.voz_velocidade, p.voz_tom)
+        voz = provedor.voz_para(p) if hasattr(provedor, "voz_para") else p.voz_nome
+        mp3, marcas = provedor.sintetizar(ssml, voz, p.voz_velocidade, p.voz_tom)
         duracao = _duracao_mp3(mp3) or marcas.get("fim", 0) + 0.35
         fim_fala = marcas.get("fim", duracao)
         for j, frase in enumerate(fala["frases"]):

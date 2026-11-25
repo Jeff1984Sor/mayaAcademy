@@ -177,10 +177,16 @@ def config_ia(request):
 
     salvo = ConfiguracaoIA.atual()
     efetiva = cfg.atual()
+    from services.tts import nome_provedor
+
     inicial = {
         "modelo": efetiva.modelo,
         "preco_entrada_1m": efetiva.preco_entrada_1m,
         "preco_saida_1m": efetiva.preco_saida_1m,
+        "tts_provedor": nome_provedor() if nome_provedor() in ("nulo", "openai") else "nulo",
+        "tts_modelo": salvo.tts_modelo if salvo else "gpt-4o-mini-tts",
+        "voz_narrador": salvo.voz_narrador if salvo else "cedar",
+        "voz_mascote": salvo.voz_mascote if salvo else "marin",
     }
     form = ConfiguracaoIAForm(request.POST or None, initial=inicial)
     if request.method == "POST" and form.is_valid():
@@ -191,10 +197,14 @@ def config_ia(request):
         obj.modelo = (d["modelo"] or "").strip()
         obj.preco_entrada_1m = d["preco_entrada_1m"]
         obj.preco_saida_1m = d["preco_saida_1m"]
+        obj.tts_provedor = d["tts_provedor"]
+        obj.tts_modelo = d["tts_modelo"].strip() or "gpt-4o-mini-tts"
+        obj.voz_narrador = d["voz_narrador"]
+        obj.voz_mascote = d["voz_mascote"]
         obj.atualizado_por = request.user
         obj.save()
         AuditLog.registrar(request, "config_ia_alterada", obj, "Configuração da IA salva pela tela",
-                           modelo=obj.modelo, chave_trocada=bool(d["chave"]),
+                           modelo=obj.modelo, chave_trocada=bool(d["chave"]), voz=obj.tts_provedor,
                            precos=[str(obj.preco_entrada_1m), str(obj.preco_saida_1m)])
         messages.success(request, "Configuração da IA salva." + ("" if obj.modelo else " Falta escolher o modelo."))
         return redirect("geracao:config_ia")
@@ -258,3 +268,21 @@ def config_ia_testar(request):
         return JsonResponse({"ok": False, "erro": str(erro)}, status=400)
     return JsonResponse({"ok": True, "resposta": r.dados.get("mensagem", ""), "modelo": r.modelo,
                          "tokens": [r.tokens_entrada, r.tokens_saida], "segundos": round(r.duracao_s, 1)})
+
+
+@criador_required
+@require_POST
+def config_ia_amostra_voz(request):
+    """Gera ~5 s de áudio com a voz escolhida, para ouvir antes de salvar."""
+    from django.http import HttpResponse
+
+    from services.tts import VOZES_OPENAI, ErroTTS, OpenAITTS
+
+    chave, corpo = _chave_da_requisicao(request)
+    voz = corpo.get("voz") if corpo.get("voz") in VOZES_OPENAI else "marin"
+    modelo = (corpo.get("modelo") or "gpt-4o-mini-tts").strip()
+    try:
+        mp3 = OpenAITTS(chave, modelo).amostra(voz, "Olá! Eu vou narrar as suas aulas. Respire fundo e vamos começar.")
+    except ErroTTS as erro:
+        return JsonResponse({"ok": False, "erro": str(erro)}, status=400)
+    return HttpResponse(mp3, content_type="audio/mpeg")

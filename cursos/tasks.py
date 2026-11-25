@@ -35,11 +35,17 @@ def gerar_audio_bloco_task(bloco_id, forcar=False):
     return _gerar_lote(_blocos(pk=bloco_id), forcar)
 
 
-@shared_task
+@shared_task(time_limit=60 * 60, soft_time_limit=60 * 60 - 30)
 def gerar_audios_aula_task(aula_id, forcar=False):
     return _gerar_lote(_blocos(aula_id=aula_id), forcar)
 
 
 @shared_task
 def gerar_audios_curso_task(curso_id, forcar=False):
-    return _gerar_lote(_blocos(aula__modulo__curso_id=curso_id), forcar)
+    """Uma tarefa por aula: o curso inteiro não cabe no limite de tempo de uma tarefa só."""
+    from .models import Aula
+
+    ids = list(Aula.objects.filter(modulo__curso_id=curso_id).order_by("modulo__ordem", "ordem").values_list("id", flat=True))
+    for aula_id in ids:
+        gerar_audios_aula_task.delay(aula_id, forcar)
+    return {"aulas": len(ids)}

@@ -198,7 +198,7 @@ def test_config_ia_pela_tela_cifra_a_chave_e_vale_mais_que_o_env(logado, setting
     settings.OPENAI_API_KEY = "sk-do-env-0000000000000"
     settings.OPENAI_MODEL = "modelo-do-env"
     r = logado.post(reverse("geracao:config_ia"), {
-        "chave": "sk-teste-1234567890abcdef", "modelo": "gpt-6.1-sol", "preco_entrada_1m": "2", "preco_saida_1m": "10",
+        "chave": "sk-teste-1234567890abcdef", "modelo": "gpt-6.1-sol", "preco_entrada_1m": "2", "preco_saida_1m": "10", "tts_provedor": "nulo", "tts_modelo": "gpt-4o-mini-tts", "voz_narrador": "cedar", "voz_mascote": "marin",
     })
     assert r.status_code == 302
     salvo = ConfiguracaoIA.atual()
@@ -209,14 +209,14 @@ def test_config_ia_pela_tela_cifra_a_chave_e_vale_mais_que_o_env(logado, setting
     tela = logado.get(reverse("geracao:config_ia")).content.decode()
     assert "sk-tes…cdef" in tela and "sk-teste-1234567890abcdef" not in tela
     # salvar de novo sem chave mantém a anterior
-    logado.post(reverse("geracao:config_ia"), {"chave": "", "modelo": "outro", "preco_entrada_1m": "1", "preco_saida_1m": "5"})
+    logado.post(reverse("geracao:config_ia"), {"chave": "", "modelo": "outro", "preco_entrada_1m": "1", "preco_saida_1m": "5", "tts_provedor": "nulo", "tts_modelo": "gpt-4o-mini-tts", "voz_narrador": "cedar", "voz_mascote": "marin"})
     assert config_ia.atual().chave == "sk-teste-1234567890abcdef"
     # o custo passa a usar o preço da tela
     assert float(RespostaLLM({}, 1_000_000, 1_000_000, "m", 1).custo_usd) == pytest.approx(6.0)
 
 
 def test_config_ia_rejeita_chave_estranha(logado):
-    r = logado.post(reverse("geracao:config_ia"), {"chave": "minha senha", "modelo": "x", "preco_entrada_1m": "1", "preco_saida_1m": "1"})
+    r = logado.post(reverse("geracao:config_ia"), {"chave": "minha senha", "modelo": "x", "preco_entrada_1m": "1", "preco_saida_1m": "1", "tts_provedor": "nulo", "tts_modelo": "gpt-4o-mini-tts", "voz_narrador": "cedar", "voz_mascote": "marin"})
     assert r.status_code == 200 and "não parece uma chave" in r.content.decode()
 
 
@@ -245,3 +245,61 @@ def test_gerador_avisa_quando_ia_nao_configurada(logado, settings):
     settings.LLM_PROVIDER = "openai"
     settings.OPENAI_API_KEY = ""
     assert "IA ainda não está configurada" in logado.get(reverse("geracao:lista")).content.decode()
+
+
+# --- narração pela OpenAI ---------------------------------------------------------------
+
+def _mp3(segundos):
+    """MP3 válido (frames de silêncio) com a duração aproximada pedida."""
+    quadro = bytes.fromhex("fffb9064") + b"\x00" * 413  # MPEG1 Layer3 128kbps 44.1kHz: 417 bytes, ~26 ms
+    return quadro * max(1, round(segundos / 0.026122))
+
+
+def test_frases_do_ssml_volta_ao_texto():
+    from services.tts import _frases_do_ssml, montar_ssml
+
+    ssml = montar_ssml(["Oi!", "Respire [pausa] e *solte*.", "Fim & pronto."])
+    assert _frases_do_ssml(ssml) == [("f0", "Oi!"), ("f1", "Respire e solte."), ("f2", "Fim & pronto.")]
+
+
+def test_openai_tts_mede_cada_frase(monkeypatch):
+    from services import tts
+
+    chamadas = []
+
+    class _Resp:
+        def __init__(self, dados):
+            self.dados = dados
+
+        def read(self):
+            return self.dados
+
+    class _Cliente:
+        def __init__(self, **kw):
+            self.audio = self
+            self.speech = self
+
+        def create(self, **kw):
+            chamadas.append(kw)
+            return _Resp(_mp3(1.0 if kw["input"] == "Oi!" else 2.0))
+
+    monkeypatch.setattr("openai.OpenAI", _Cliente)
+    p = tts.OpenAITTS("sk-x-1234567890")
+    mp3, marcas = p.sintetizar(tts.montar_ssml(["Oi!", "Tudo bem com você?"]), "marin")
+    assert marcas["f0"] == 0 and 0.9 < marcas["f1"] < 1.1 and 2.9 < marcas["fim"] < 3.1
+    assert len(chamadas) == 2 and chamadas[0]["voice"] == "marin" and "instructions" in chamadas[0]
+
+
+def test_voz_escolhida_na_tela_liga_a_narracao(db, settings):
+    from cursos.models import Personagem
+    from geracao import config_ia
+    from geracao.models import ConfiguracaoIA
+    from services import tts
+
+    settings.TTS_PROVIDER = "nulo"
+    ConfiguracaoIA.objects.create(pk=1, chave_cifrada=config_ia.cifrar("sk-x-1234567890abc"), modelo="m",
+                                  tts_provedor="openai", voz_narrador="ash", voz_mascote="coral")
+    p = tts.provedor()
+    assert p.nome == "openai" and p.gera_audio
+    assert p.voz_para(Personagem(papel="mascote", voz_nome="pt-BR-Neural2-C")) == "coral"
+    assert p.voz_para(Personagem(papel="narrador", voz_nome="onyx")) == "onyx"

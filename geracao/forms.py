@@ -79,6 +79,20 @@ class ConfiguracaoIAForm(forms.Form):
     preco_saida_1m = forms.DecimalField(label="Preço de saída (US$ por 1 milhão de tokens)", min_value=0,
                                         max_digits=8, decimal_places=4)
 
+    tts_provedor = forms.ChoiceField(label="Voz da narração", choices=[("nulo", "Desligada (só legendas)"), ("openai", "OpenAI")])
+    tts_modelo = forms.CharField(label="Modelo de voz", max_length=60, initial="gpt-4o-mini-tts",
+                                 help_text="Padrão: gpt-4o-mini-tts (aceita instruções de sotaque e tom).")
+    voz_narrador = forms.ChoiceField(label="Voz do narrador")
+    voz_mascote = forms.ChoiceField(label="Voz do mascote")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        from services.tts import VOZES_OPENAI
+
+        opcoes = [(v, v) for v in VOZES_OPENAI]
+        self.fields["voz_narrador"].choices = opcoes
+        self.fields["voz_mascote"].choices = opcoes
+
     def clean_chave(self):
         chave = self.cleaned_data.get("chave") or ""
         if chave and (not chave.startswith("sk-") or len(chave) < 20 or " " in chave):

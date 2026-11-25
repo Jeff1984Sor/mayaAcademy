@@ -64,6 +64,30 @@
     }).catch(function () { botao.disabled = false; msgModelos.textContent = "⚠ Não foi possível consultar agora."; });
   });
 
+  form.querySelectorAll("[data-ouvir]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var voz = form.querySelector("[name=" + b.dataset.ouvir + "]").value;
+      var modelo = form.querySelector("[name=tts_modelo]").value;
+      b.disabled = true;
+      b.textContent = "…";
+      fetch(form.dataset.urlAmostra, {
+        method: "POST", credentials: "same-origin",
+        headers: { "Content-Type": "application/json", "X-CSRFToken": csrf() },
+        body: JSON.stringify({ chave: campoChave.value, voz: voz, modelo: modelo }),
+      }).then(function (r) {
+        if (!r.ok) return r.json().then(function (j) { throw new Error(j.erro); });
+        return r.blob();
+      }).then(function (blob) {
+        new Audio(URL.createObjectURL(blob)).play();
+        b.disabled = false; b.textContent = "▶ Ouvir";
+      }).catch(function (e) {
+        b.disabled = false; b.textContent = "▶ Ouvir";
+        msgTeste.className = "text-sm text-perigo-700 dark:text-perigo-50";
+        msgTeste.textContent = "✘ " + (e.message || "Não foi possível gerar a amostra.");
+      });
+    });
+  });
+
   document.getElementById("btn-testar").addEventListener("click", function (ev) {
     var botao = ev.currentTarget;
     botao.disabled = true;
