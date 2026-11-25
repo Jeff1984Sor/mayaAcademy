@@ -10,5 +10,9 @@ urlpatterns = [
     path("estudio/pdf/", include("geracao.urls")),
     path("estudio/", include("estudio.urls")),
     path("aprender/", include("aprendizado.urls")),
+    path("prova/", include("avaliacoes.urls")),
+    path("certificado/", include("certificados.urls")),
+    path("organizacao/", include("organizacoes.urls")),
+    path("pagamentos/", include("pagamentos.urls")),
     path("", include("catalogo.urls")),
 ]

@@ -158,11 +158,18 @@ def test_estimativa_conta_so_desatualizados(curso_piloto, tts_falso):
 
 # ---------------------------------------------------------------- publicação (N9) e versão
 
-def test_n9_nao_publica_sem_audio(curso_piloto):
+def test_n9_nao_publica_sem_audio(curso_piloto, settings):
+    settings.TTS_PROVIDER = "google"
+    settings.GOOGLE_TTS_API_KEY = "chave-falsa"
     assert not publicacao.pode_publicar(curso_piloto)
     itens = {i["texto"]: i for i in publicacao.checklist(curso_piloto)}
     assert not itens["Todos os áudios gerados e em dia com o roteiro"]["ok"]
     assert not publicacao.publicar(curso_piloto)
+
+
+def test_sem_provedor_de_voz_legendas_bastam(curso_piloto):
+    itens = {i["texto"]: i for i in publicacao.checklist(curso_piloto)}
+    assert itens["Narração por legendas cronometradas (voz desligada: TTS_PROVIDER=nulo)"]["ok"]
 
 
 def test_publica_e_republica_incrementa_versao(curso_piloto, tts_falso):

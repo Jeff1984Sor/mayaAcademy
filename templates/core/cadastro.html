@@ -4,8 +4,9 @@
 {% block cartao %}
   <form method="post" novalidate>
     {% csrf_token %}
+    <input type="hidden" name="next" value="{{ request.GET.next|default:request.POST.next|default:'' }}">
     {% include "_form.html" %}
     <button class="btn w-full">Criar conta</button>
   </form>
-  <p class="mt-4 text-sm">Já tem conta? <a href="{% url 'core:login' %}">Entrar</a></p>
+  <p class="mt-4 text-sm">Já tem conta? <a href="{% url 'core:login' %}{% if request.GET.next %}?next={{ request.GET.next|urlencode }}{% endif %}">Entrar</a></p>
 {% endblock %}

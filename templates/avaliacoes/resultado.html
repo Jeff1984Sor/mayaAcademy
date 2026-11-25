@@ -1,0 +1,38 @@
+{% extends "app.html" %}
+{% block titulo %}Resultado da prova — {{ curso.titulo }}{% endblock %}
+{% block conteudo %}
+  <nav class="mb-4 text-sm suave" aria-label="Trilha"><a href="{% url 'aprendizado:curso' curso.slug %}">{{ curso.titulo }}</a> › Resultado da tentativa {{ tentativa.numero }}</nav>
+  <section class="cartao mb-6 text-center {% if tentativa.aprovado %}border-teal-600{% endif %}">
+    <p class="text-5xl" aria-hidden="true">{% if tentativa.aprovado %}🎉{% else %}📚{% endif %}</p>
+    <h1 class="mt-2">{% if tentativa.aprovado %}Aprovado(a)!{% else %}Ainda não foi desta vez{% endif %}</h1>
+    <p class="mt-2 font-mono text-4xl font-bold">{{ tentativa.nota|floatformat:0 }}%</p>
+    <p class="text-sm suave">nota mínima {{ curso.nota_minima }}%</p>
+    <div class="mt-4 flex flex-wrap justify-center gap-2">
+      {% if certificado %}
+        <a class="btn" href="{% url 'certificados:baixar' certificado.codigo %}">⬇ Baixar certificado</a>
+        <a class="btn-sec" href="{% url 'certificados:validar' certificado.codigo %}">Ver validação pública</a>
+      {% elif not tentativa.aprovado %}
+        {% if restam %}<a class="btn" href="{% url 'avaliacoes:prova' curso.slug %}">Tentar de novo ({{ restam }} restante{{ restam|pluralize }})</a>
+        {% else %}<p class="text-sm">Você usou todas as tentativas. O responsável pelo curso pode liberar uma nova.</p>{% endif %}
+      {% endif %}
+      <a class="btn-sec" href="{% url 'aprendizado:curso' curso.slug %}">Voltar ao curso</a>
+    </div>
+  </section>
+
+  <h2 class="mb-3">Correção</h2>
+  <ol class="space-y-3">
+    {% for q in itens %}
+      <li class="cartao">
+        <p class="font-semibold">{% if q.acertou %}<span class="text-teal-600">✔</span>{% else %}<span class="text-perigo-600">✘</span>{% endif %} {{ forloop.counter }}. {{ q.enunciado }}</p>
+        <ul class="mt-2 space-y-1 text-sm">
+          {% for alt in q.alternativas %}
+            <li class="rounded px-2 py-1 {% if forloop.counter0 == q.correta %}bg-teal-50 font-semibold text-teal-700 dark:bg-teal-700/30 dark:text-teal-100{% elif forloop.counter0 == q.resposta %}bg-perigo-50 text-perigo-700 dark:bg-perigo-700/30 dark:text-perigo-50{% endif %}">
+              {{ alt }}{% if forloop.counter0 == q.resposta %} <span class="text-xs">(sua resposta)</span>{% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+        {% if q.explicacao %}<p class="mt-2 text-sm suave">💡 {{ q.explicacao }}</p>{% endif %}
+      </li>
+    {% endfor %}
+  </ol>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load static %}
+{% block titulo %}MayaAcademy — cursos com narração, animação e interação{% endblock %}
+{% block conteudo %}
+  <section class="mb-10 grid items-center gap-8 md:grid-cols-[1fr_auto]">
+    <div>
+      <p class="mb-2 text-sm font-semibold uppercase tracking-wider text-indigo-500">MayaAcademy</p>
+      <h1 class="text-4xl leading-tight">Cursos que conversam com você.</h1>
+      <p class="mt-3 max-w-2xl text-lg suave">Nenhuma aula é só texto: narração, cenas animadas, simulações e desafios, no celular ou no computador. Ao final, prova e certificado com validação pública.</p>
+      <div class="mt-6 flex flex-wrap gap-3">
+        <a class="btn" href="#cursos">Ver cursos</a>
+        <a class="btn-sec" href="{% url 'certificados:buscar' %}">Validar um certificado</a>
+      </div>
+    </div>
+    <img src="{% static 'img/favicon.svg' %}" alt="" class="hidden h-40 w-40 md:block">
+  </section>
+
+  <section id="cursos" aria-labelledby="t-cursos">
+    <h2 id="t-cursos" class="mb-4">Cursos disponíveis</h2>
+    {% if cursos %}
+      <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {% for c in cursos %}
+          <a href="{% url 'catalogo:curso' c.slug %}" class="cartao flex flex-col text-inherit hover:border-indigo-400 hover:no-underline">
+            {% if c.capa %}<img src="{{ c.capa.url }}" alt="" class="mb-3 aspect-video w-full rounded-xl object-cover">
+            {% else %}<div class="mb-3 aspect-video w-full rounded-xl" style="background: linear-gradient(135deg, {{ c.cor_primaria }}, {{ c.cor_secundaria }})"></div>{% endif %}
+            <h3 class="text-lg font-semibold text-dark dark:text-white">{{ c.titulo }}</h3>
+            {% if c.subtitulo %}<p class="mt-1 text-sm suave">{{ c.subtitulo }}</p>{% endif %}
+            <p class="mt-auto pt-3 text-xs suave">{{ c.n_aulas }} aula(s) · {{ c.carga_horaria }} h · {{ c.get_nivel_display }}</p>
+            <p class="mt-1 font-semibold">{% if c.modo_acesso == 'gratuito' %}Gratuito{% elif c.modo_acesso == 'pago' %}R$ {{ c.preco|floatformat:2 }}{% else %}Por convite{% endif %}</p>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="cartao text-center suave">Os primeiros cursos estão sendo preparados. Volte em breve!</div>
+    {% endif %}
+  </section>
+{% endblock %}

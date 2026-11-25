@@ -1,0 +1,46 @@
+{% extends "estudio/_base.html" %}
+{% block trilha %} › Alunos{% endblock %}
+{% block estudio %}
+  <div class="mb-6 flex flex-wrap items-end justify-between gap-3">
+    <div>
+      <h1>Alunos</h1>
+      <p class="text-sm suave">{{ linhas|length }} matrícula(s) · {{ curso.tentativas }} tentativa(s) de prova por aluno, nota mínima {{ curso.nota_minima }}%</p>
+    </div>
+    <form method="post" action="{% url 'estudio:matricular_manual' curso.pk %}" class="flex gap-2">
+      {% csrf_token %}
+      <label for="email-matricula" class="sr-only">E-mail do aluno</label>
+      <input id="email-matricula" name="email" type="email" required placeholder="e-mail do aluno" class="w-64">
+      <button class="btn">Matricular manualmente</button>
+    </form>
+  </div>
+  <div class="cartao overflow-x-auto p-0">
+    <table class="w-full text-left text-sm">
+      <thead class="text-xs uppercase suave"><tr><th class="px-5 py-3">Aluno</th><th class="px-3 py-3">Origem</th><th class="px-3 py-3">Progresso</th><th class="px-3 py-3">Prova</th><th class="px-3 py-3">Certificado</th><th class="px-5 py-3"></th></tr></thead>
+      <tbody class="divide-y divide-navy-100 dark:divide-dark-600">
+        {% for l in linhas %}
+          <tr>
+            <td class="px-5 py-3">{{ l.m.aluno.nome }}<br><span class="text-xs suave">{{ l.m.aluno.email }}{% if l.m.organizacao %} · {{ l.m.organizacao.nome }}{% endif %}</span></td>
+            <td class="px-3 py-3">{{ l.m.get_origem_display }}<br><span class="font-mono text-xs suave">{{ l.m.criada_em|date:"d/m/Y" }}</span></td>
+            <td class="px-3 py-3 font-mono">{{ l.percentual }}%</td>
+            <td class="px-3 py-3">
+              {% if l.aprovado %}<span class="selo-ok">aprovado · {{ l.nota|floatformat:0 }}%</span>
+              {% elif l.tentativas %}<span class="font-mono">{{ l.tentativas }}/{{ l.permitidas }}</span> · melhor {{ l.nota|floatformat:0 }}%
+              {% else %}<span class="suave">—</span>{% endif %}
+            </td>
+            <td class="px-3 py-3">{% if l.certificado %}<a class="font-mono text-xs" href="{% url 'certificados:validar' l.certificado.codigo %}">{{ l.certificado.codigo }}</a>{% if l.certificado.manual %} <span class="selo-neutro">manual</span>{% endif %}{% else %}—{% endif %}</td>
+            <td class="px-5 py-3 text-right">
+              <div class="flex justify-end gap-1">
+                {% if not l.aprovado and l.tentativas >= l.permitidas %}
+                  <form method="post" action="{% url 'estudio:liberar_tentativa' l.m.pk %}" onsubmit="return confirm('Liberar uma nova tentativa de prova? (fica registrado na auditoria)')">{% csrf_token %}<button class="btn-sec py-1 text-xs">+1 tentativa</button></form>
+                {% endif %}
+                {% if not l.certificado %}
+                  <form method="post" action="{% url 'estudio:emitir_certificado' l.m.pk %}" onsubmit="return confirm('Emitir o certificado manualmente? (fica registrado na auditoria)')">{% csrf_token %}<button class="btn-sec py-1 text-xs">Emitir certificado</button></form>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+        {% empty %}<tr><td colspan="6" class="px-5 py-4 suave">Nenhum aluno matriculado.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

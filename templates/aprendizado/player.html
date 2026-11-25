@@ -13,6 +13,7 @@
 <body>
   <div id="player" data-sair-url="{{ sair_url }}" data-previa="{{ previa|yesno:'1,0' }}"></div>
   {{ dados|json_script:"dados-aula" }}
+  {{ estado|json_script:"estado-aula" }}
   <script src="{% static 'vendor/gsap.min.js' %}" defer></script>
   <script src="{% static 'vendor/lottie_light.min.js' %}" defer></script>
   <script src="{% static 'js/player.bundle.js' %}" defer></script>

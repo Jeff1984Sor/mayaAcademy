@@ -42,6 +42,22 @@ Próximo passo: instalar em **produção** e passar pelo **GATE 2**.
   mais a estimativa do TTS). "Ver trecho do PDF" no bloco e "Gerar de novo" a aula com instrução extra.
 - IA: **OpenAI** (pedido do Jefferson em 24/11), isolada em `services/llm.py`.
 
+**F3, F4 (parte), F5 e F6 — itens que estavam "em breve" (pedido do Jefferson em 24/11)**
+- Matrícula, progresso salvo a cada bloco e retomada (N8), aulas liberadas em ordem (N1), página do curso do aluno.
+- Prova final: só com 100% das aulas (N2), sorteio com alternativas embaralhadas e snapshot (N3), nota mínima e
+  tentativas, com tentativa extra liberada pelo criador no Estúdio › Alunos (N4, AuditLog).
+- Certificado automático na aprovação (N5): PDF A4 com QR code, código `MA-XXXXX-XXXXX`, validação pública.
+- XP (aula, quiz de primeira, interações, curso) e medalhas (Primeiro certificado, Nota 100, Maratonista, Mil de XP);
+  ranking por organização (o gestor liga/desliga; o aluno pode ficar anônimo).
+- Catálogo público, página do curso com aula de amostra, matrícula gratuita.
+- Organizações: licenças por curso (vagas e validade, alterações no AuditLog), convites por e-mail com link,
+  vaga consumida só no aceite (N6), painel do gestor com progresso, notas, certificados, filtros e CSV.
+- Pagamentos: interface de gateway com provedor "manual" (o criador confirma no painel); a matrícula só nasce da
+  confirmação, pelo mesmo caminho do webhook, que é idempotente (N7).
+- Estúdio: alunos do curso (matrícula manual, tentativa extra, certificado manual) e relatórios gerais.
+- Publicação: com `TTS_PROVIDER=nulo` o item de áudio do checklist passa (legendas cronometradas); com voz ligada,
+  continua exigindo todos os áudios (N9).
+
 ### Falta
 
 - Remover a hml do servidor; instalar prod, DNS de `academy.mayacorp.com.br` e certbot → **GATE 1**.

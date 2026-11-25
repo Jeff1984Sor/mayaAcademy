@@ -11,6 +11,7 @@ Pillow>=11
 requests>=2.32
 openai>=3.59,<4
 PyMuPDF>=1.26
+segno>=1.6
 
 # testes (rodar no servidor)
 pytest>=8

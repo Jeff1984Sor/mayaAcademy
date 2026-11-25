@@ -1,0 +1,11 @@
+{% extends "app.html" %}
+{% block titulo %}{{ titulo }} — MayaAcademy{% endblock %}
+{% block conteudo %}
+  <nav class="mb-4 text-sm suave" aria-label="Trilha"><a href="{% url 'organizacoes:lista' %}">Organizações</a>{% if org %} › <a href="{% url 'organizacoes:detalhe' org.pk %}">{{ org.nome }}</a>{% endif %} › {{ titulo }}</nav>
+  <h1 class="mb-6">{{ titulo }}</h1>
+  <form method="post" enctype="multipart/form-data" class="cartao max-w-2xl" novalidate>
+    {% csrf_token %}
+    {% include "_form.html" %}
+    <button class="btn">Salvar</button>
+  </form>
+{% endblock %}

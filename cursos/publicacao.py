@@ -37,7 +37,13 @@ def checklist(curso):
     itens.append({"ok": not estrutura, "texto": f"Todas as aulas com ≥ {registro.MIN_BLOCOS} blocos e ≥ {registro.MIN_INTERATIVOS} interativos", "detalhes": estrutura})
     itens.append({"ok": not configs, "texto": "Todos os blocos com configuração válida", "detalhes": configs})
     itens.append({"ok": not falta_personagem, "texto": "Todos os personagens dos roteiros cadastrados", "detalhes": falta_personagem})
-    itens.append({"ok": not audios, "texto": "Todos os áudios gerados e em dia com o roteiro", "detalhes": audios})
+    from services import tts
+
+    if tts.provedor().gera_audio:
+        itens.append({"ok": not audios, "texto": "Todos os áudios gerados e em dia com o roteiro", "detalhes": audios})
+    else:
+        # Sem provedor de voz (TTS_PROVIDER=nulo) o player usa legendas cronometradas: não há áudio a exigir.
+        itens.append({"ok": True, "texto": "Narração por legendas cronometradas (voz desligada: TTS_PROVIDER=nulo)", "detalhes": []})
     itens.append({"ok": not revisao, "texto": "Nenhuma aula marcada como \"precisa de revisão\"", "detalhes": revisao})
 
     minimo = math.ceil(curso.questoes_sorteadas * 1.5)

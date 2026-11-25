@@ -84,7 +84,9 @@ def test_previa_ao_vivo(logado, curso_piloto):
     assert "JSON inválido" in r.content.decode()
 
 
-def test_publicar_bloqueado_sem_checklist(logado, curso_piloto):
+def test_publicar_bloqueado_sem_checklist(logado, curso_piloto, settings):
+    settings.TTS_PROVIDER = "google"
+    settings.GOOGLE_TTS_API_KEY = "chave-falsa"
     logado.post(reverse("estudio:curso_publicar", args=[curso_piloto.pk]))
     curso_piloto.refresh_from_db()
     assert curso_piloto.status == "rascunho"

@@ -1,0 +1,39 @@
+{% extends "app.html" %}
+{% block titulo %}Pagamentos — MayaAcademy{% endblock %}
+{% block conteudo %}
+  <div class="mb-6 flex flex-wrap items-start justify-between gap-3">
+    <div>
+      <h1>Pagamentos</h1>
+      <p class="text-sm suave">Gateway atual: <strong>manual</strong> — confirme aqui os pagamentos recebidos. A matrícula só é liberada pela confirmação (mesmo caminho do webhook).</p>
+    </div>
+    <div class="cartao py-3 text-right"><p class="text-xs suave">Receita confirmada</p><p class="font-mono text-2xl font-bold">R$ {{ receita|floatformat:2 }}</p></div>
+  </div>
+  <form method="get" class="mb-4 flex flex-wrap gap-2 text-sm">
+    <a class="{% if not status %}btn{% else %}btn-sec{% endif %} py-1" href="?">Todos</a>
+    {% for valor, rotulo in Status.choices %}<a class="{% if status == valor %}btn{% else %}btn-sec{% endif %} py-1" href="?status={{ valor }}">{{ rotulo }}{% if valor == 'pendente' and pendentes %} ({{ pendentes }}){% endif %}</a>{% endfor %}
+  </form>
+  <div class="cartao overflow-x-auto p-0">
+    <table class="w-full text-left text-sm">
+      <thead class="text-xs uppercase suave"><tr><th class="px-5 py-3">Pedido</th><th class="px-3 py-3">Aluno</th><th class="px-3 py-3">Curso</th><th class="px-3 py-3">Valor</th><th class="px-3 py-3">Situação</th><th class="px-5 py-3"></th></tr></thead>
+      <tbody class="divide-y divide-navy-100 dark:divide-dark-600">
+        {% for p in pedidos %}
+          <tr>
+            <td class="px-5 py-3 font-mono">#{{ p.pk }}<br><span class="text-xs suave">{{ p.criado_em|date:"d/m/Y H:i" }}</span></td>
+            <td class="px-3 py-3">{{ p.aluno.nome }}<br><span class="text-xs suave">{{ p.aluno.email }}</span></td>
+            <td class="px-3 py-3">{{ p.curso.titulo|truncatechars:35 }}</td>
+            <td class="px-3 py-3 font-mono">R$ {{ p.valor|floatformat:2 }}</td>
+            <td class="px-3 py-3"><span class="{% if p.status == 'pago' %}selo-ok{% elif p.status == 'pendente' %}selo-alerta{% else %}selo-erro{% endif %}">{{ p.get_status_display }}</span></td>
+            <td class="px-5 py-3 text-right">
+              {% if p.status == 'pendente' and p.gateway == 'manual' %}
+                <form method="post" action="{% url 'pagamentos:confirmar_manual' p.pk %}" class="inline-flex gap-1">{% csrf_token %}
+                  <button class="btn py-1 text-xs" name="acao" value="confirmar" onclick="return confirm('Confirmar o recebimento e liberar a matrícula?')">✔ Confirmar pagamento</button>
+                  <button class="btn-perigo py-1 text-xs" name="acao" value="cancelar" onclick="return confirm('Cancelar este pedido?')">Cancelar</button>
+                </form>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}<tr><td colspan="6" class="px-5 py-4 suave">Nenhum pedido.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "app.html" %}
+{% block titulo %}Prova final — {{ curso.titulo }}{% endblock %}
+{% block conteudo %}
+  <nav class="mb-4 text-sm suave" aria-label="Trilha"><a href="{% url 'aprendizado:curso' curso.slug %}">{{ curso.titulo }}</a> › Prova final</nav>
+  <h1 class="mb-2">Prova final</h1>
+  {% if tentativa %}
+    <p class="mb-6 text-sm suave">Tentativa {{ tentativa.numero }} de {{ permitidas }} · {{ tentativa.questoes|length }} questões · nota mínima {{ curso.nota_minima }}%. Suas respostas só contam quando você enviar.</p>
+    <form method="post" action="{% url 'avaliacoes:responder' curso.slug %}" class="space-y-4" id="form-prova">
+      {% csrf_token %}
+      {% for q in tentativa.questoes %}
+        <fieldset class="cartao">
+          <legend class="mb-3 font-semibold"><span class="font-mono suave">{{ forloop.counter }}.</span> {{ q.enunciado }}</legend>
+          <div class="space-y-2">
+            {% for alt in q.alternativas %}
+              <label class="flex cursor-pointer items-start gap-3 rounded-lg border border-navy-100 p-3 hover:bg-navy-50 has-[:checked]:border-indigo-400 has-[:checked]:bg-indigo-100 dark:border-dark-600 dark:hover:bg-dark-700 dark:has-[:checked]:bg-indigo-400/20">
+                <input type="radio" name="q_{{ forloop.parentloop.counter0 }}" value="{{ forloop.counter0 }}" required class="mt-1"> <span>{{ alt }}</span>
+              </label>
+            {% endfor %}
+          </div>
+        </fieldset>
+      {% endfor %}
+      <div class="sticky bottom-0 flex items-center justify-between gap-3 border-t border-navy-100 bg-cinza py-3 dark:border-dark-600 dark:bg-dark">
+        <span class="text-sm suave" id="contador" aria-live="polite"></span>
+        <button class="btn">Enviar respostas</button>
+      </div>
+    </form>
+    <script>
+      (function () {
+        var f = document.getElementById("form-prova"), total = {{ tentativa.questoes|length }}, c = document.getElementById("contador");
+        function contar() { var n = new Set(Array.from(f.querySelectorAll("input[type=radio]:checked")).map(function (i) { return i.name; })).size; c.textContent = n + " de " + total + " respondidas"; }
+        f.addEventListener("change", contar); contar();
+        f.addEventListener("submit", function (e) { if (!confirm("Enviar as respostas? Depois de enviar, esta tentativa é corrigida e não pode ser refeita.")) e.preventDefault(); });
+      })();
+    </script>
+  {% elif pendencias %}
+    <div class="cartao">
+      <p class="mb-2 font-semibold">A prova ainda não está liberada:</p>
+      <ul class="list-disc pl-5 text-sm">{% for p in pendencias %}<li>{{ p }}</li>{% endfor %}</ul>
+      <a class="btn-sec mt-4" href="{% url 'aprendizado:curso' curso.slug %}">Voltar ao curso</a>
+    </div>
+  {% else %}
+    <div class="cartao max-w-xl">
+      <ul class="mb-4 space-y-1 text-sm">
+        <li>📝 {{ curso.questoes_sorteadas }} questões sorteadas do banco do curso, com alternativas embaralhadas.</li>
+        <li>🎯 Nota mínima para aprovação: {{ curso.nota_minima }}%.</li>
+        <li>🔁 Tentativas: {{ usadas }} usada(s) de {{ permitidas }}.</li>
+        <li>🏅 Aprovado(a), seu certificado é emitido na hora.</li>
+      </ul>
+      <form method="post">{% csrf_token %}<input type="hidden" name="acao" value="iniciar"><button class="btn">Começar a prova</button></form>
+    </div>
+  {% endif %}
+{% endblock %}

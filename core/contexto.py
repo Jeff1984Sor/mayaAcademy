@@ -11,21 +11,31 @@ NAV = [
             {"rotulo": "Cursos", "icone": "📚", "url": "estudio:painel", "prefixo": "/estudio/"},
             {"rotulo": "Importar roteiro", "icone": "⬆", "url": "estudio:importar", "prefixo": "/estudio/importar/"},
             {"rotulo": "Curso a partir de PDF", "icone": "📄", "url": "geracao:lista", "prefixo": "/estudio/pdf/"},
+            {"rotulo": "Relatórios", "icone": "📊", "url": "estudio:relatorios", "prefixo": "/estudio/relatorios/"},
         ],
     },
     {
         "titulo": "Aprendizado",
         "itens": [
             {"rotulo": "Meus cursos", "icone": "🎓", "url": "aprendizado:meus_cursos", "prefixo": "/aprender/"},
-            {"rotulo": "Certificados", "icone": "🏅", "em_breve": "F3"},
+            {"rotulo": "Certificados", "icone": "🏅", "url": "certificados:meus", "prefixo": "/certificado/"},
+            {"rotulo": "XP e medalhas", "icone": "⭐", "url": "aprendizado:perfil", "prefixo": "/aprender/perfil/"},
+            {"rotulo": "Catálogo", "icone": "🔎", "url": "catalogo:home", "prefixo": "/curso/"},
+        ],
+    },
+    {
+        "titulo": "Minha organização",
+        "gestor": True,
+        "itens": [
+            {"rotulo": "Painel do gestor", "icone": "🏢", "url": "organizacoes:painel", "prefixo": "/organizacao/painel/"},
         ],
     },
     {
         "titulo": "Gestão",
         "criador": True,
         "itens": [
-            {"rotulo": "Organizações", "icone": "🏢", "em_breve": "F5"},
-            {"rotulo": "Pagamentos", "icone": "💳", "em_breve": "F6"},
+            {"rotulo": "Organizações", "icone": "🏢", "url": "organizacoes:lista", "prefixo": "/organizacao/"},
+            {"rotulo": "Pagamentos", "icone": "💳", "url": "pagamentos:painel", "prefixo": "/pagamentos/"},
             {"rotulo": "Administração", "icone": "⚙", "url": "admin:index", "prefixo": "/admin/", "superuser": True},
         ],
     },
@@ -39,6 +49,8 @@ def shell(request):
         caminho = request.path
         for g in NAV:
             if g.get("criador") and not usuario.eh_criador:
+                continue
+            if g.get("gestor") and not (usuario.eh_gestor and not usuario.eh_criador):
                 continue
             itens = []
             for i in g["itens"]:

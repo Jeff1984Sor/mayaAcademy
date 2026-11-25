@@ -1,0 +1,32 @@
+{% extends "estudio/_base.html" %}
+{% block trilha %} › Relatórios{% endblock %}
+{% block estudio %}
+  <h1 class="mb-6">Relatórios</h1>
+  <div class="mb-6 grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
+    <div class="cartao"><p class="text-xs suave">Alunos</p><p class="font-mono text-2xl font-bold">{{ totais.alunos }}</p></div>
+    <div class="cartao"><p class="text-xs suave">Matrículas</p><p class="font-mono text-2xl font-bold">{{ totais.matriculas }}</p></div>
+    <div class="cartao"><p class="text-xs suave">Cursos concluídos</p><p class="font-mono text-2xl font-bold">{{ totais.concluidas }}</p></div>
+    <div class="cartao"><p class="text-xs suave">Certificados</p><p class="font-mono text-2xl font-bold">{{ totais.certificados }}</p></div>
+    <div class="cartao"><p class="text-xs suave">Aprovações (7 dias)</p><p class="font-mono text-2xl font-bold">{{ totais.aprovacoes_7d }}</p></div>
+    <div class="cartao"><p class="text-xs suave">Receita</p><p class="font-mono text-2xl font-bold">R$ {{ totais.receita|floatformat:2 }}</p></div>
+  </div>
+  <div class="cartao overflow-x-auto p-0">
+    <table class="w-full text-left text-sm">
+      <thead class="text-xs uppercase suave"><tr><th class="px-5 py-3">Curso</th><th class="px-3 py-3">Matrículas</th><th class="px-3 py-3">Conclusão</th><th class="px-3 py-3">Nota média</th><th class="px-3 py-3">Onde o pessoal para</th><th class="px-3 py-3">Receita</th><th class="px-5 py-3"></th></tr></thead>
+      <tbody class="divide-y divide-navy-100 dark:divide-dark-600">
+        {% for c in cursos %}
+          <tr class="align-top">
+            <td class="px-5 py-3"><a class="font-semibold" href="{% url 'estudio:curso' c.curso.pk %}">{{ c.curso.titulo }}</a><br><span class="selo-{{ c.curso.status }}">{{ c.curso.get_status_display }}</span></td>
+            <td class="px-3 py-3 font-mono">{{ c.matriculas }}{% if c.por_origem %}<br><span class="font-sans text-xs suave">{% for o, n in c.por_origem.items %}{{ o }}: {{ n }}{% if not forloop.last %} · {% endif %}{% endfor %}</span>{% endif %}</td>
+            <td class="px-3 py-3 font-mono">{{ c.concluidas }} ({{ c.taxa }}%)</td>
+            <td class="px-3 py-3 font-mono">{% if c.nota_media is not None %}{{ c.nota_media|floatformat:0 }}%{% else %}—{% endif %}</td>
+            <td class="px-3 py-3 text-xs">{% for p in c.paradas %}{{ p.aula__titulo|truncatechars:35 }} <span class="font-mono">({{ p.n }})</span>{% if not forloop.last %}<br>{% endif %}{% empty %}—{% endfor %}</td>
+            <td class="px-3 py-3 font-mono">R$ {{ c.receita|floatformat:2 }}</td>
+            <td class="px-5 py-3 text-right"><a class="btn-sec py-1" href="{% url 'estudio:alunos' c.curso.pk %}">Alunos</a></td>
+          </tr>
+        {% empty %}<tr><td colspan="7" class="px-5 py-4 suave">Nenhum curso.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="mt-3 text-xs suave">“Onde o pessoal para”: aulas iniciadas e ainda não concluídas por alunos com matrícula em andamento.</p>
+{% endblock %}

@@ -44,6 +44,11 @@ INSTALLED_APPS = [
     "aprendizado",
     "catalogo",
     "geracao",
+    "avaliacoes",
+    "certificados",
+    "gamificacao",
+    "organizacoes",
+    "pagamentos",
 ]
 
 MIDDLEWARE = [
@@ -155,6 +160,10 @@ OPENAI_MODEL = env("OPENAI_MODEL", "")
 LLM_PRECO_ENTRADA_1M = float(env("LLM_PRECO_ENTRADA_1M", "0"))
 LLM_PRECO_SAIDA_1M = float(env("LLM_PRECO_SAIDA_1M", "0"))
 PDF_LIMITE_PAGINAS = int(env("PDF_LIMITE_PAGINAS", "300"))
+
+# Pagamentos (F6): "manual" até o gateway real ser escolhido. O webhook exige este segredo.
+PAGAMENTOS_GATEWAY = env("PAGAMENTOS_GATEWAY", "manual")
+PAGAMENTOS_WEBHOOK_SEGREDO = env("PAGAMENTOS_WEBHOOK_SEGREDO", "")
 
 # Rate limit de login: tentativas por janela (segundos), por IP + e-mail
 LOGIN_RATE_LIMIT = (5, 15 * 60)

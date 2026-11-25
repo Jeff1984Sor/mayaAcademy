@@ -44,5 +44,5 @@ def test_saude(client, db):
     assert r.status_code == 200 and r.json()["banco"] == "ok"
 
 
-def test_home_em_construcao(client, db):
-    assert "Em construção" in client.get("/").content.decode()
+def test_home_catalogo(client, db):
+    assert "Cursos disponíveis" in client.get("/").content.decode()

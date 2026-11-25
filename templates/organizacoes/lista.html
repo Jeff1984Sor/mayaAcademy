@@ -1,0 +1,30 @@
+{% extends "app.html" %}
+{% block titulo %}Organizações — MayaAcademy{% endblock %}
+{% block conteudo %}
+  <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h1>Organizações</h1>
+      <p class="text-sm suave">Empresas e turmas que recebem licenças de cursos. O gestor de cada uma envia os convites e acompanha os alunos.</p>
+    </div>
+    <a class="btn" href="{% url 'organizacoes:nova' %}">+ Nova organização</a>
+  </div>
+  {% if orgs %}
+    <div class="cartao overflow-x-auto p-0">
+      <table class="w-full text-left text-sm">
+        <thead class="text-xs uppercase suave"><tr><th class="px-5 py-3">Organização</th><th class="px-3 py-3">Licenças</th><th class="px-3 py-3">Situação</th><th class="px-5 py-3"></th></tr></thead>
+        <tbody class="divide-y divide-navy-100 dark:divide-dark-600">
+          {% for o in orgs %}
+            <tr>
+              <td class="px-5 py-3"><a class="font-semibold" href="{% url 'organizacoes:detalhe' o.pk %}">{{ o.nome }}</a>{% if o.cnpj %}<br><span class="font-mono text-xs suave">{{ o.cnpj }}</span>{% endif %}</td>
+              <td class="px-3 py-3">{% for l in o.licencas.all %}<span class="selo-neutro">{{ l.curso.titulo|truncatechars:30 }} · {{ l.vagas_usadas }}/{{ l.vagas }}</span> {% empty %}<span class="suave">nenhuma</span>{% endfor %}</td>
+              <td class="px-3 py-3">{% if o.ativa %}<span class="selo-ok">ativa</span>{% else %}<span class="selo-arquivado">inativa</span>{% endif %}</td>
+              <td class="px-5 py-3 text-right"><a class="btn-sec py-1" href="{% url 'organizacoes:painel' %}?org={{ o.pk }}">Painel do gestor</a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="cartao text-center"><p class="text-4xl" aria-hidden="true">🏢</p><p class="mt-2 suave">Nenhuma organização cadastrada.</p></div>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "app.html" %}
+{% block titulo %}Pedido {{ p.pk }} — MayaAcademy{% endblock %}
+{% block conteudo %}
+  <section class="cartao mx-auto max-w-xl text-center">
+    <p class="text-4xl" aria-hidden="true">{% if p.status == 'pago' %}✅{% elif p.status == 'pendente' %}⏳{% else %}✖{% endif %}</p>
+    <h1 class="mt-2">Pedido nº {{ p.pk }}</h1>
+    <p class="mt-1">{{ p.curso.titulo }} · <span class="font-mono">R$ {{ p.valor|floatformat:2 }}</span></p>
+    <p class="mt-3"><span class="{% if p.status == 'pago' %}selo-ok{% elif p.status == 'pendente' %}selo-alerta{% else %}selo-erro{% endif %}">{{ p.get_status_display }}</span></p>
+    {% if p.status == 'pago' %}
+      <a class="btn mt-6" href="{% url 'aprendizado:curso' p.curso.slug %}">Ir para o curso →</a>
+    {% elif p.status == 'pendente' %}
+      <p class="mt-4 text-sm suave">
+        Assim que o pagamento for confirmado, a matrícula é liberada automaticamente e o curso aparece em “Meus cursos”.
+        {% if p.gateway == 'manual' %}Nesta fase, a confirmação é feita pela equipe MayaCorp: combine o pagamento pelo contato informado no site.{% endif %}
+      </p>
+      <a class="btn-sec mt-6" href="{% url 'catalogo:curso' p.curso.slug %}">Voltar ao curso</a>
+    {% endif %}
+  </section>
+{% endblock %}

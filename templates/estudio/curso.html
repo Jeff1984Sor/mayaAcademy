@@ -9,6 +9,8 @@
     </div>
     <div class="flex flex-wrap gap-2">
       <a class="btn-sec" href="{% url 'estudio:curso_editar' curso.pk %}">✎ Dados do curso</a>
+      <a class="btn-sec" href="{% url 'estudio:alunos' curso.pk %}">👥 Alunos</a>
+      {% if curso.status == 'publicado' %}<a class="btn-sec" href="{% url 'catalogo:curso' curso.slug %}" target="_blank" rel="noopener">🌐 Página pública</a>{% endif %}
       <a class="btn-sec" href="{% url 'estudio:questoes' curso.pk %}">❓ Questões ({{ n_questoes }})</a>
       <a class="btn-sec" href="{% url 'estudio:curso_exportar' curso.pk %}">⬇ Exportar roteiro</a>
       {% with ger=curso.geracoes.first %}{% if ger %}<a class="btn-sec" href="{% url 'geracao:detalhe' ger.pk %}">📄 Relatório e custo da geração</a>{% endif %}{% endwith %}

@@ -45,7 +45,13 @@ sem confirmação explícita. Nenhum dado real de cliente em exemplos/seeds (R6)
   (IA sem rede para testes). Prompts versionados em `estudio/prompts/*.md`. IA isolada em `services/llm.py`
   (provedor **OpenAI**, `LLM_PROVIDER=openai`, modelo e preço no `.env`; cada chamada vira um `ChamadaLLM` com custo).
 - `estudio/` área do criador (editor com formulário gerado do schema + prévia ao vivo, reordenação por arrastar, importador).
-- `aprendizado/` página do player (matrícula/progresso entram na F3). `catalogo/` home ("em construção" até a F4) e `/saude/`.
+- `aprendizado/` matrícula, progresso por bloco (N8), liberação em ordem (N1), página do curso do aluno, perfil/XP.
+  `avaliacoes/` prova final (N2–N4: sorteio + embaralhamento com snapshot, tentativas, extra pelo criador).
+  `certificados/` emissão automática (N5), PDF com QR (PyMuPDF + segno), validação pública `/certificado/<codigo>/`.
+  `gamificacao/` XP idempotente e medalhas (globais criadas por migration). `organizacoes/` licenças, convites (N6),
+  painel do gestor com CSV e ranking. `pagamentos/` interface de gateway (`gateways.py`): provedor `manual`, webhook
+  idempotente (N7). `catalogo/` home com catálogo, página do curso, matrícula gratuita e `/saude/`.
+  `estudio/views_alunos.py` alunos do curso e relatórios do criador.
 - `static/js/player/` **player** em ES modules (motor genérico + um componente por tipo em `blocos/`). Nunca carregue os
   módulos direto: rode `manage.py montar_player` (gera `static/js/player.bundle.js`, que também vai no pacote SCORM e abre em `file://`).
 - `static/css/player.css` CSS próprio do player (sem Tailwind, porque vai no pacote). `static/css/entrada.css` → Tailwind do resto.

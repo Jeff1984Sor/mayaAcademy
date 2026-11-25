@@ -17,3 +17,5 @@ STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.InMemoryStorage"},
     "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
 }
+PAGAMENTOS_WEBHOOK_SEGREDO = "segredo-de-teste"
+SITE_URL = "https://academy.teste"

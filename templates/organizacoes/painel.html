@@ -1,0 +1,97 @@
+{% extends "app.html" %}
+{% block titulo %}{{ org.nome }} — painel do gestor{% endblock %}
+{% block conteudo %}
+  <div class="mb-6 flex flex-wrap items-start justify-between gap-3">
+    <div>
+      <p class="text-sm suave">Painel do gestor</p>
+      <h1>{{ org.nome }}</h1>
+    </div>
+    <form method="post" action="{% url 'organizacoes:ranking' %}" class="flex items-center gap-2 text-sm">
+      {% csrf_token %}<input type="hidden" name="org" value="{{ org.pk }}"><input type="hidden" name="ativo" value="{% if org.ranking_ativo %}0{% else %}1{% endif %}">
+      <span>Ranking dos alunos: <strong>{{ org.ranking_ativo|yesno:"ligado,desligado" }}</strong></span>
+      <button class="btn-sec py-1">{% if org.ranking_ativo %}Desligar{% else %}Ligar{% endif %}</button>
+    </form>
+  </div>
+
+  <div class="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    {% for l in licencas %}
+      <div class="cartao">
+        <p class="text-sm font-semibold">{{ l.curso.titulo }}</p>
+        <p class="mt-1 font-mono text-2xl">{{ l.vagas_usadas }}<span class="text-base suave">/{{ l.vagas }}</span></p>
+        <p class="text-xs suave">vagas usadas · até {{ l.validade|date:"d/m/Y" }}</p>
+        {% if l.vencida %}<span class="selo-erro">vencida</span>{% elif l.cheia %}<span class="selo-alerta">cheia</span>{% endif %}
+      </div>
+    {% empty %}
+      <div class="cartao suave sm:col-span-2">Sua organização ainda não tem licenças. Fale com a MayaCorp.</div>
+    {% endfor %}
+  </div>
+
+  <div class="grid gap-6 lg:grid-cols-3">
+    <section class="cartao" aria-labelledby="t-conv">
+      <h2 id="t-conv" class="mb-3">Convidar alunos</h2>
+      {% if licencas %}
+        <form method="post" action="{% url 'organizacoes:convidar' %}" novalidate>{% csrf_token %}<input type="hidden" name="org" value="{{ org.pk }}">{% include "_form.html" %}<button class="btn">Enviar convites</button></form>
+      {% else %}<p class="text-sm suave">Sem licença ativa.</p>{% endif %}
+    </section>
+
+    <section class="cartao overflow-x-auto lg:col-span-2" aria-labelledby="t-lista-conv">
+      <h2 id="t-lista-conv" class="mb-3">Convites</h2>
+      <table class="w-full text-left text-sm">
+        <thead class="text-xs uppercase suave"><tr><th class="py-2 pr-3">E-mail</th><th class="py-2 pr-3">Curso</th><th class="py-2 pr-3">Situação</th><th class="py-2"></th></tr></thead>
+        <tbody class="divide-y divide-navy-100 dark:divide-dark-600">
+          {% for c in convites %}
+            <tr>
+              <td class="py-2 pr-3">{{ c.email }}</td>
+              <td class="py-2 pr-3">{{ c.licenca.curso.titulo|truncatechars:30 }}</td>
+              <td class="py-2 pr-3"><span class="{% if c.situacao == 'aceito' %}selo-ok{% elif c.situacao == 'pendente' %}selo-neutro{% else %}selo-arquivado{% endif %}">{{ c.situacao }}</span></td>
+              <td class="py-2 text-right">
+                {% if c.situacao == 'pendente' %}
+                  <button type="button" class="btn-sec py-1 text-xs" data-link="{{ c.link }}" onclick="var b=this; navigator.clipboard.writeText(b.dataset.link).then(function(){ b.textContent='✔ Copiado'; })" title="Copiar o link do convite">🔗 Copiar link</button>
+                  <form method="post" action="{% url 'organizacoes:cancelar_convite' c.pk %}" class="inline">{% csrf_token %}<input type="hidden" name="org" value="{{ org.pk }}"><button class="btn-perigo py-1 text-xs">Cancelar</button></form>
+                {% endif %}
+              </td>
+            </tr>
+          {% empty %}<tr><td colspan="4" class="py-3 suave">Nenhum convite enviado.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </section>
+  </div>
+
+  <section class="cartao mt-6 overflow-x-auto" aria-labelledby="t-alunos">
+    <div class="mb-3 flex flex-wrap items-end justify-between gap-3">
+      <h2 id="t-alunos">Alunos</h2>
+      <form method="get" class="flex flex-wrap items-end gap-2 text-sm">
+        {% if consulta_org %}<input type="hidden" name="org" value="{{ org.pk }}">{% endif %}
+        <label>Curso <select name="curso"><option value="">Todos</option>{% for c in cursos %}<option value="{{ c.pk }}" {% if filtro_curso == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.titulo }}</option>{% endfor %}</select></label>
+        <label>Situação <select name="situacao"><option value="">Todas</option>
+          <option value="em andamento" {% if filtro_situacao == 'em andamento' %}selected{% endif %}>Em andamento</option>
+          <option value="concluiu aulas" {% if filtro_situacao == 'concluiu aulas' %}selected{% endif %}>Concluiu as aulas</option>
+          <option value="aprovado" {% if filtro_situacao == 'aprovado' %}selected{% endif %}>Aprovado</option></select></label>
+        <button class="btn-sec py-1.5">Filtrar</button>
+        <button class="btn-sec py-1.5" name="formato" value="csv">⬇ CSV</button>
+      </form>
+    </div>
+    <table class="w-full text-left text-sm">
+      <thead class="text-xs uppercase suave"><tr><th class="py-2 pr-3">Aluno</th><th class="py-2 pr-3">Curso</th><th class="py-2 pr-3">Progresso</th><th class="py-2 pr-3">Situação</th><th class="py-2 pr-3">Nota</th><th class="py-2">Certificado</th></tr></thead>
+      <tbody class="divide-y divide-navy-100 dark:divide-dark-600">
+        {% for l in linhas %}
+          <tr>
+            <td class="py-2 pr-3">{{ l.aluno.nome }}<br><span class="text-xs suave">{{ l.aluno.email }}</span></td>
+            <td class="py-2 pr-3">{{ l.curso.titulo|truncatechars:30 }}</td>
+            <td class="py-2 pr-3"><div class="h-2 w-24 overflow-hidden rounded-full bg-navy-50 dark:bg-dark-700"><div class="h-full bg-teal-600" style="width: {{ l.percentual }}%"></div></div><span class="font-mono text-xs">{{ l.percentual }}%</span></td>
+            <td class="py-2 pr-3">{{ l.situacao }}</td>
+            <td class="py-2 pr-3 font-mono">{% if l.nota is not None %}{{ l.nota|floatformat:0 }}%{% else %}—{% endif %}</td>
+            <td class="py-2">{% if l.certificado %}<a class="font-mono text-xs" href="{% url 'certificados:validar' l.certificado.codigo %}">{{ l.certificado.codigo }}</a>{% else %}—{% endif %}</td>
+          </tr>
+        {% empty %}<tr><td colspan="6" class="py-3 suave">Nenhum aluno ainda. Os alunos aparecem aqui quando aceitam o convite.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  {% if ranking %}
+    <section class="cartao mt-6 max-w-md" aria-labelledby="t-rank">
+      <h2 id="t-rank" class="mb-3">Ranking (XP)</h2>
+      <ol class="space-y-1 text-sm">{% for pos, nome, pontos, uid in ranking %}<li class="flex justify-between"><span>{{ pos }}. {{ nome }}</span><span class="font-mono">{{ pontos }}</span></li>{% endfor %}</ol>
+    </section>
+  {% endif %}
+{% endblock %}

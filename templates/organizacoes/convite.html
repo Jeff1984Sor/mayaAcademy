@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block titulo %}Convite — {{ c.licenca.curso.titulo }}{% endblock %}
+{% block main_class %}mx-auto max-w-xl px-4 py-12{% endblock %}
+{% block conteudo %}
+  <section class="cartao text-center">
+    <p class="text-4xl" aria-hidden="true">✉️</p>
+    <h1 class="mt-2">Você foi convidado(a)!</h1>
+    <p class="mt-3"><strong>{{ c.licenca.organizacao.nome }}</strong> convidou você para o curso</p>
+    <p class="mt-1 text-xl font-semibold">{{ c.licenca.curso.titulo }}</p>
+    {% if c.situacao == 'pendente' %}
+      <p class="mt-2 text-sm suave">Convite enviado para {{ c.email }} · vale até {{ c.licenca.validade|date:"d/m/Y" }}</p>
+      {% if user.is_authenticated %}
+        <form method="post" class="mt-6">{% csrf_token %}<button class="btn">Aceitar e começar</button></form>
+        <p class="mt-3 text-xs suave">Você está entrando como {{ user.email }}.</p>
+      {% else %}
+        <div class="mt-6 flex flex-wrap justify-center gap-2">
+          <a class="btn" href="{% url 'core:cadastro' %}?next={{ request.path|urlencode }}">Criar conta e aceitar</a>
+          <a class="btn-sec" href="{% url 'core:login' %}?next={{ request.path|urlencode }}">Já tenho conta</a>
+        </div>
+      {% endif %}
+    {% elif c.situacao == 'aceito' %}
+      <p class="mt-4 selo-ok">Convite já aceito</p>
+      {% if user.is_authenticated %}<a class="btn mt-4" href="{% url 'aprendizado:curso' c.licenca.curso.slug %}">Ir para o curso</a>{% endif %}
+    {% else %}
+      <p class="mt-4 selo-erro">Este convite {% if c.situacao == "expirado" %}expirou{% else %}foi cancelado{% endif %}.</p>
+      <p class="mt-2 text-sm suave">Fale com o gestor da sua organização.</p>
+    {% endif %}
+  </section>
+{% endblock %}
