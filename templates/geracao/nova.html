@@ -1,0 +1,15 @@
+{% extends "estudio/_base.html" %}
+{% block trilha %} › <a href="{% url 'geracao:lista' %}">Curso a partir de PDF</a> › Novo{% endblock %}
+{% block estudio %}
+  <h1 class="mb-2">Novo curso a partir de PDF</h1>
+  <p class="mb-6 text-sm suave">
+    A IA lê o material, mapeia o conteúdo e propõe a ementa. <strong>Nenhuma aula é gerada antes de você aprovar a ementa</strong>,
+    e o curso nasce como rascunho. O conteúdo técnico vem só do PDF; o que a IA complementar recebe o selo “⚠ além do PDF”.
+  </p>
+  <form method="post" enctype="multipart/form-data" class="cartao max-w-3xl" novalidate>
+    {% csrf_token %}
+    {% include "_form.html" %}
+    <button class="btn">Enviar e propor a ementa</button>
+    <p class="mt-3 text-xs suave">A leitura e a ementa levam alguns minutos. Você pode sair desta página e voltar depois.</p>
+  </form>
+{% endblock %}

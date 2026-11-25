@@ -7,7 +7,11 @@
       {% csrf_token %}
       <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
         <h1>{{ bloco.get_tipo_display }}</h1>
-        {% if bloco.interativo %}<span class="selo-neutro">interativo</span>{% endif %}
+        <span class="flex flex-wrap items-center gap-2">
+          {% if bloco.interativo %}<span class="selo-neutro">interativo</span>{% endif %}
+          {% if bloco.alem_do_pdf %}<span class="selo-alerta">⚠ além do PDF</span>{% endif %}
+          {% if bloco.paginas_origem %}<a class="btn-sec px-2 py-1 text-xs" href="{% url 'geracao:trecho_bloco' bloco.pk %}" target="_blank" rel="noopener">📄 Ver trecho do PDF</a>{% endif %}
+        </span>
       </div>
       {% if form.non_field_errors %}<div class="mb-4 rounded-lg bg-perigo-50 p-3 text-sm text-perigo-700">{{ form.non_field_errors }}</div>{% endif %}
 

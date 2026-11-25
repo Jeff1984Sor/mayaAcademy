@@ -1,0 +1,23 @@
+{% extends "estudio/_base.html" %}
+{% block trilha %} › <a href="{% url 'estudio:aula' bloco.aula.pk %}">{{ bloco.aula.titulo }}</a> › <a href="{% url 'estudio:bloco' bloco.pk %}">{{ bloco.titulo|default:bloco.get_tipo_display }}</a> › Trecho do PDF{% endblock %}
+{% block estudio %}
+  <h1 class="mb-1">Trecho do PDF</h1>
+  <p class="mb-6 text-sm suave">
+    Páginas de origem do bloco “{{ bloco.titulo|default:bloco.get_tipo_display }}”: {{ bloco.paginas_origem|join:", "|default:"nenhuma" }}.
+    {% if bloco.alem_do_pdf %}<span class="selo-alerta">⚠ conteúdo além do PDF</span>{% endif %}
+  </p>
+  {% if not geracao %}
+    <div class="cartao suave">Este curso não foi gerado a partir de um PDF.</div>
+  {% else %}
+    <div class="space-y-4">
+      {% for p in paginas %}
+        <article class="cartao">
+          <h2 class="mb-2 text-base">Página {{ p.numero }} {% if p.ocr %}<span class="selo-neutro">OCR</span>{% endif %}</h2>
+          <div class="whitespace-pre-line text-sm leading-relaxed">{{ p.texto }}</div>
+        </article>
+      {% empty %}
+        <div class="cartao suave">O bloco não tem páginas de origem. Revise o conteúdo: ele foi marcado como além do PDF.</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endblock %}

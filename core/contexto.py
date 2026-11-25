@@ -10,7 +10,7 @@ NAV = [
         "itens": [
             {"rotulo": "Cursos", "icone": "📚", "url": "estudio:painel", "prefixo": "/estudio/"},
             {"rotulo": "Importar roteiro", "icone": "⬆", "url": "estudio:importar", "prefixo": "/estudio/importar/"},
-            {"rotulo": "Curso a partir de PDF", "icone": "📄", "em_breve": "F2.5"},
+            {"rotulo": "Curso a partir de PDF", "icone": "📄", "url": "geracao:lista", "prefixo": "/estudio/pdf/"},
         ],
     },
     {

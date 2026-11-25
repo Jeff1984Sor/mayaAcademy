@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "estudio",
     "aprendizado",
     "catalogo",
+    "geracao",
 ]
 
 MIDDLEWARE = [
@@ -143,9 +144,17 @@ DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", "MayaAcademy <nao-responda@localh
 # Serviços plugáveis
 TTS_PROVIDER = env("TTS_PROVIDER", "nulo")
 GOOGLE_TTS_API_KEY = env("GOOGLE_TTS_API_KEY", "")
-LLM_PROVIDER = env("LLM_PROVIDER", "anthropic")
-ANTHROPIC_API_KEY = env("ANTHROPIC_API_KEY", "")
-ANTHROPIC_MODEL = env("ANTHROPIC_MODEL", "")
+# Custo do TTS para o relatório (US$ por 1 milhão de caracteres). REVISAR na tabela do provedor.
+TTS_PRECO_1M_CARACTERES = float(env("TTS_PRECO_1M_CARACTERES", "16"))
+
+# IA do gerador de curso por PDF (F2.5): "openai" ou "falso" (sem rede, para testes)
+LLM_PROVIDER = env("LLM_PROVIDER", "openai")
+OPENAI_API_KEY = env("OPENAI_API_KEY", "")
+OPENAI_MODEL = env("OPENAI_MODEL", "")
+# Preço do modelo escolhido, em US$ por 1 milhão de tokens (só para o painel de custo). REVISAR.
+LLM_PRECO_ENTRADA_1M = float(env("LLM_PRECO_ENTRADA_1M", "0"))
+LLM_PRECO_SAIDA_1M = float(env("LLM_PRECO_SAIDA_1M", "0"))
+PDF_LIMITE_PAGINAS = int(env("PDF_LIMITE_PAGINAS", "300"))
 
 # Rate limit de login: tentativas por janela (segundos), por IP + e-mail
 LOGIN_RATE_LIMIT = (5, 15 * 60)

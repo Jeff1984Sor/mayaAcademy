@@ -106,8 +106,12 @@ EMAIL_HOST_USER=
 EMAIL_HOST_PASSWORD=
 EMAIL_USE_TLS=True
 DEFAULT_FROM_EMAIL=MayaAcademy <nao-responda@mayacorp.com.br>
-ANTHROPIC_API_KEY=
-ANTHROPIC_MODEL=
+LLM_PROVIDER=openai
+OPENAI_API_KEY=
+OPENAI_MODEL=
+LLM_PRECO_ENTRADA_1M=0
+LLM_PRECO_SAIDA_1M=0
+PDF_LIMITE_PAGINAS=300
 ENV
 como "chmod 600 '$DIR/.env' && mkdir -p '$DIR/media' '$DIR/logs' '$DIR/staticfiles'"
 
@@ -152,5 +156,5 @@ echo
 echo "=== Pronto: $AMB instalado (app local: HTTP $CODIGO) ==="
 echo "    1) DNS: registro A '$DOMINIO' → IP deste servidor"
 echo "    2) HTTPS: sudo certbot --nginx -d $DOMINIO"
-echo "    3) Preencha no $DIR/.env: SMTP, GOOGLE_TTS_API_KEY (e TTS_PROVIDER=google), ANTHROPIC_API_KEY"
+echo "    3) Preencha no $DIR/.env: SMTP, GOOGLE_TTS_API_KEY (e TTS_PROVIDER=google), OPENAI_API_KEY e OPENAI_MODEL"
 echo "       e depois: sudo systemctl restart mayaacademy-web@$AMB mayaacademy-worker@$AMB"

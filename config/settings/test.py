@@ -10,6 +10,9 @@ PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
 EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 CELERY_TASK_ALWAYS_EAGER = True
 TTS_PROVIDER = "nulo"
+LLM_PROVIDER = "falso"
+LLM_PRECO_ENTRADA_1M = 2.0
+LLM_PRECO_SAIDA_1M = 8.0
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.InMemoryStorage"},
     "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},

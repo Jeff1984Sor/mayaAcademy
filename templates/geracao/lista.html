@@ -1,0 +1,34 @@
+{% extends "estudio/_base.html" %}
+{% block trilha %} › Curso a partir de PDF{% endblock %}
+{% block estudio %}
+  <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h1>Curso a partir de PDF</h1>
+      <p class="text-sm suave">Envie um material e a IA propõe a ementa. Você revisa e só então as aulas são geradas, sempre como rascunho.</p>
+    </div>
+    <a class="btn" href="{% url 'geracao:nova' %}">+ Novo curso a partir de PDF</a>
+  </div>
+  {% if geracoes %}
+    <div class="cartao overflow-x-auto p-0">
+      <table class="w-full text-left text-sm">
+        <thead class="text-xs uppercase suave"><tr><th class="px-5 py-3">Geração</th><th class="px-3 py-3">Situação</th><th class="px-3 py-3">Curso</th><th class="px-3 py-3">Custo de IA</th><th class="px-5 py-3">Criada em</th></tr></thead>
+        <tbody class="divide-y divide-navy-100 dark:divide-dark-600">
+          {% for g in geracoes %}
+            <tr class="hover:bg-navy-50 dark:hover:bg-dark-700">
+              <td class="px-5 py-3"><a href="{% url 'geracao:detalhe' g.pk %}" class="font-semibold">{{ g.titulo }}</a></td>
+              <td class="px-3 py-3"><span class="{% if g.status == 'erro' %}selo-erro{% elif g.status == 'pronto' %}selo-ok{% elif g.status == 'ementa' %}selo-alerta{% else %}selo-neutro{% endif %}">{{ g.get_status_display }}</span></td>
+              <td class="px-3 py-3">{% if g.curso %}<a href="{% url 'estudio:curso' g.curso.pk %}">{{ g.curso.titulo }}</a>{% else %}<span class="suave">—</span>{% endif %}</td>
+              <td class="px-3 py-3 font-mono">US$ {{ g.custo_total|floatformat:4 }}</td>
+              <td class="px-5 py-3 font-mono suave">{{ g.criado_em|date:"d/m/Y H:i" }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="cartao text-center">
+      <p class="text-4xl" aria-hidden="true">📄</p>
+      <p class="mt-2 suave">Nenhuma geração ainda. Comece enviando uma apostila, manual ou e-book em PDF.</p>
+    </div>
+  {% endif %}
+{% endblock %}

@@ -7,6 +7,7 @@ admin.site.site_title = "MayaAcademy"
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("conta/", include("core.urls")),
+    path("estudio/pdf/", include("geracao.urls")),
     path("estudio/", include("estudio.urls")),
     path("aprender/", include("aprendizado.urls")),
     path("", include("catalogo.urls")),

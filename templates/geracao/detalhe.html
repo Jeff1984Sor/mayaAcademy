@@ -1,0 +1,163 @@
+{% extends "estudio/_base.html" %}
+{% load static %}
+{% block trilha %} › <a href="{% url 'geracao:lista' %}">Curso a partir de PDF</a> › {{ g.titulo }}{% endblock %}
+{% block estudio %}
+  <div class="mb-6 flex flex-wrap items-start justify-between gap-4">
+    <div>
+      <span class="{% if g.status == 'erro' %}selo-erro{% elif g.status == 'pronto' %}selo-ok{% elif g.status == 'ementa' %}selo-alerta{% else %}selo-neutro{% endif %}">{{ g.get_status_display }}</span>
+      <h1 class="mt-2">{{ g.titulo }}</h1>
+      <p class="text-sm suave">
+        {% for a in arquivos %}{{ a.nome }}{% if a.paginas %} ({{ a.paginas }} p.){% endif %}{% if not forloop.last %} · {% endif %}{% endfor %}
+        · público: {{ g.publico }} · {{ g.get_nivel_display }} · tom {{ g.get_tom_display|lower }}
+      </p>
+    </div>
+    {% if g.curso %}<a class="btn" href="{% url 'estudio:curso' g.curso.pk %}">Abrir o curso no Estúdio →</a>{% endif %}
+  </div>
+
+  {% if g.em_andamento %}
+    <section class="cartao mb-6" aria-live="polite" id="andamento" data-url="{% url 'geracao:situacao' g.pk %}" data-status="{{ g.status }}">
+      <div class="mb-2 flex items-center justify-between text-sm">
+        <strong id="and-rotulo">{{ g.get_status_display }}</strong><span class="font-mono" id="and-pct">{{ g.progresso }}%</span>
+      </div>
+      <div class="h-3 overflow-hidden rounded-full bg-navy-50 dark:bg-dark-700" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ g.progresso }}" id="and-barra">
+        <div class="h-full rounded-full bg-indigo-400 transition-all" style="width: {{ g.progresso }}%" id="and-preench"></div>
+      </div>
+      <p class="mt-2 text-sm suave" id="and-etapa">{{ g.etapa }}</p>
+      <ol class="mt-4 grid gap-2 text-xs sm:grid-cols-5">
+        {% for chave, rotulo in g.Status.choices %}{% if chave != 'erro' and chave != 'na_fila' %}
+          <li class="rounded-lg px-2 py-1 text-center {% if chave == g.status %}bg-indigo-400 font-semibold text-dark{% else %}bg-navy-50 dark:bg-dark-700{% endif %}">{{ rotulo }}</li>
+        {% endif %}{% endfor %}
+      </ol>
+    </section>
+  {% endif %}
+
+  {% if g.status == 'erro' %}
+    <section class="cartao mb-6 border-perigo-50 bg-perigo-50 text-perigo-700 dark:bg-perigo-700/30 dark:text-perigo-50" role="alert">
+      <h2>A preparação parou</h2>
+      <p class="mt-2 text-sm">{{ g.erro }}</p>
+      {% if not g.curso %}
+        <form method="post" action="{% url 'geracao:reprocessar' g.pk %}" class="mt-4">{% csrf_token %}<button class="btn">Tentar de novo</button></form>
+      {% endif %}
+    </section>
+  {% endif %}
+
+  {% if g.status == 'ementa' %}
+    <section class="mb-6" aria-labelledby="t-ementa">
+      <div class="mb-3">
+        <h2 id="t-ementa">Revise a ementa antes de gerar as aulas</h2>
+        <p class="text-sm suave">
+          Edite títulos, objetivos e páginas; reordene, divida, junte ou exclua aulas e módulos. As aulas só são geradas quando você clicar em
+          <strong>Aprovar e gerar aulas</strong>. O material tem {{ total_paginas }} páginas.
+        </p>
+      </div>
+      {{ ementa_json|json_script:"dados-ementa" }}
+      <form method="post" action="{% url 'geracao:ementa_salvar' g.pk %}" id="form-ementa">
+        {% csrf_token %}
+        <input type="hidden" name="ementa" id="campo-ementa">
+        <div id="editor-ementa" class="space-y-4"><p class="suave">Carregando o editor…</p></div>
+        <div class="sticky bottom-0 mt-4 flex flex-wrap gap-2 border-t border-navy-100 bg-cinza py-3 dark:border-dark-600 dark:bg-dark">
+          <button class="btn-sec" name="acao" value="salvar">Salvar rascunho da ementa</button>
+          <button class="btn" name="acao" value="gerar" id="btn-gerar">✔ Aprovar e gerar aulas</button>
+        </div>
+      </form>
+    </section>
+  {% endif %}
+
+  {% if aulas %}
+    <section class="cartao mb-6 overflow-x-auto" aria-labelledby="t-aulas">
+      <h2 id="t-aulas" class="mb-3">Aulas</h2>
+      <table class="w-full text-left text-sm">
+        <thead class="text-xs uppercase suave"><tr><th class="py-2 pr-3">Aula</th><th class="py-2 pr-3">Páginas</th><th class="py-2 pr-3">Situação</th><th class="py-2">Gerar de novo</th></tr></thead>
+        <tbody class="divide-y divide-navy-100 dark:divide-dark-600">
+          {% for a in aulas %}
+            <tr class="align-top">
+              <td class="py-3 pr-3">
+                <span class="font-mono suave">{{ a.modulo_num }}.{{ a.aula_num }}</span>
+                {% if a.aula %}<a href="{% url 'estudio:aula' a.aula.pk %}">{{ a.aula.titulo }}</a>{% else %}{{ a.titulo }} <span class="suave">(excluída)</span>{% endif %}
+                {% if a.problemas %}
+                  <details class="mt-1 text-xs"><summary class="cursor-pointer suave">{{ a.problemas|length }} observação(ões)</summary>
+                    <ul class="mt-1 list-disc pl-5">{% for p in a.problemas %}<li>{{ p }}</li>{% endfor %}</ul>
+                  </details>
+                {% endif %}
+              </td>
+              <td class="py-3 pr-3 font-mono text-xs">{{ a.paginas|join:", "|truncatechars:40 }}</td>
+              <td class="py-3 pr-3">
+                <span class="{% if a.status == 'ok' %}selo-ok{% elif a.status == 'revisao' %}selo-alerta{% elif a.status == 'erro' %}selo-erro{% else %}selo-neutro{% endif %}">{{ a.get_status_display }}</span>
+                {% if a.tentativas > 1 %}<span class="text-xs suave">{{ a.tentativas }} tentativas</span>{% endif %}
+              </td>
+              <td class="py-3">
+                {% if a.aula and a.status != 'pendente' and a.status != 'gerando' %}
+                  <form method="post" action="{% url 'geracao:aula_de_novo' a.pk %}" class="flex gap-1">
+                    {% csrf_token %}
+                    <input name="instrucao" placeholder="Instrução extra (ex.: mais leve)" maxlength="500" class="min-w-0 flex-1 py-1 text-xs" aria-label="Instrução extra para a aula {{ a.modulo_num }}.{{ a.aula_num }}">
+                    <button class="btn-sec py-1 text-xs" onclick="return confirm('Gerar de novo substitui os blocos e as questões desta aula. Continuar?')">↻</button>
+                  </form>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+  {% endif %}
+
+  <div class="grid gap-6 lg:grid-cols-2">
+    <section class="cartao" aria-labelledby="t-rel">
+      <h2 id="t-rel" class="mb-3">Relatório</h2>
+      <dl class="grid grid-cols-[1fr_auto] gap-x-4 gap-y-2 text-sm">
+        {% if rel.aulas_total %}
+          <dt>Aulas geradas sem pendência</dt><dd class="font-mono">{{ rel.aulas_ok }} de {{ rel.aulas_total }}</dd>
+          <dt>Aulas que precisam de revisão</dt><dd class="font-mono">{{ rel.aulas_revisao|length }}</dd>
+          <dt>Blocos com página de origem</dt><dd class="font-mono">{{ rel.blocos_com_origem }} de {{ rel.blocos }}</dd>
+          <dt>Blocos com selo “além do PDF”</dt><dd class="font-mono">{{ rel.blocos_alem_pdf }}</dd>
+          <dt>Blocos com origem ou selo (N12)</dt><dd class="font-mono">{{ rel.cobertura_n12 }}%</dd>
+          <dt>Questões de prova</dt><dd class="font-mono">{{ rel.questoes_prova }} (mín. {{ rel.questoes_necessarias }} para publicar)</dd>
+          <dt>Questões de fixação</dt><dd class="font-mono">{{ rel.questoes_fixacao }}</dd>
+        {% endif %}
+        <dt>Páginas lidas</dt><dd class="font-mono">{{ rel.paginas_total }}</dd>
+        <dt>Páginas lidas por OCR</dt><dd class="font-mono">{{ rel.paginas_ocr|default:"nenhuma" }}</dd>
+        <dt>Páginas sem texto legível</dt><dd class="font-mono">{{ rel.paginas_sem_texto|default:"nenhuma" }}</dd>
+        <dt>Páginas não aproveitadas ({{ rel.n_nao_aproveitadas }})</dt><dd class="font-mono text-right">{{ rel.paginas_nao_aproveitadas|default:"nenhuma"|truncatechars:80 }}</dd>
+      </dl>
+      {% if rel.paginas_sem_texto and not rel.paginas_ocr %}
+        <p class="mt-3 text-xs suave">Páginas sem texto costumam ser imagens. Com o OCR (Tesseract) instalado no servidor, elas também são lidas.</p>
+      {% endif %}
+    </section>
+
+    <section class="cartao" aria-labelledby="t-custo">
+      <h2 id="t-custo" class="mb-3">Custo estimado</h2>
+      <table class="w-full text-left text-sm">
+        <thead class="text-xs uppercase suave"><tr><th class="py-1 pr-2">Etapa</th><th class="py-1 pr-2 text-right">Chamadas</th><th class="py-1 pr-2 text-right">Tokens (entrada / saída)</th><th class="py-1 text-right">US$</th></tr></thead>
+        <tbody class="divide-y divide-navy-100 font-mono dark:divide-dark-600">
+          {% for e in rel.etapas %}
+            <tr><td class="py-1 pr-2 font-sans">{{ e.rotulo }}{% if e.falhas %} <span class="selo-erro">{{ e.falhas }} falha(s)</span>{% endif %}</td><td class="py-1 pr-2 text-right">{{ e.chamadas }}</td><td class="py-1 pr-2 text-right">{{ e.tokens_entrada }} / {{ e.tokens_saida }}</td><td class="py-1 text-right">{{ e.custo_usd|floatformat:4 }}</td></tr>
+          {% empty %}
+            <tr><td colspan="4" class="py-2 font-sans suave">Nenhuma chamada à IA ainda.</td></tr>
+          {% endfor %}
+          <tr class="font-semibold"><td class="py-1 pr-2 font-sans">IA (total)</td><td></td><td></td><td class="py-1 text-right">{{ rel.custo_ia_usd|floatformat:4 }}</td></tr>
+          {% if g.curso %}
+            <tr><td class="py-1 pr-2 font-sans">Narração (TTS) a gerar</td><td></td><td class="py-1 pr-2 text-right">{{ rel.tts.caracteres }} caracteres</td><td class="py-1 text-right">{{ rel.tts.custo_usd|floatformat:4 }}</td></tr>
+            <tr class="font-semibold"><td class="py-1 pr-2 font-sans">Total estimado</td><td></td><td></td><td class="py-1 text-right">{{ rel.custo_total_usd|floatformat:4 }}</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+      <p class="mt-3 text-xs suave">Valores calculados com os preços do .env (LLM_PRECO_*, TTS_PRECO_1M_CARACTERES). Confira na fatura do provedor.</p>
+      {% if chamadas %}
+        <details class="mt-3 text-xs">
+          <summary class="cursor-pointer suave">Ver as {{ chamadas|length }} chamadas</summary>
+          <table class="mt-2 w-full text-left">
+            <tbody class="divide-y divide-navy-100 font-mono dark:divide-dark-600">
+              {% for c in chamadas %}
+                <tr><td class="py-1 pr-2 font-sans">{{ c.referencia }}{% if not c.sucesso %} <span class="text-perigo-700 dark:text-perigo-50">({{ c.erro|truncatechars:60 }})</span>{% endif %}</td><td class="py-1 pr-2">{{ c.modelo }}</td><td class="py-1 pr-2 text-right">{{ c.tokens_entrada }}/{{ c.tokens_saida }}</td><td class="py-1 pr-2 text-right">{{ c.duracao_s|floatformat:0 }} s</td><td class="py-1 text-right">{{ c.custo_usd }}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </details>
+      {% endif %}
+    </section>
+  </div>
+{% endblock %}
+{% block scripts %}
+  {{ block.super }}
+  <script src="{% static 'js/estudio/geracao.js' %}" defer></script>
+{% endblock %}

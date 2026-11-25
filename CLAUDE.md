@@ -40,6 +40,10 @@ sem confirmação explícita. Nenhum dado real de cliente em exemplos/seeds (R6)
   - `roteiro_io.py`: importar/validar (erros com número da linha)/exportar YAML. `publicacao.py`: checklist N9 e versão.
   - `player.py`: JSON que o player consome. `bundle.py`: empacota o player em um script único.
   - `pacote.py`: **download do curso** (HTML5 + SCORM 1.2 num .zip).
+- `geracao/` **gerador de curso por PDF** (F2.5): `pipeline.py` (extração+OCR → mapa → ementa → **gate do criador** →
+  uma chamada por aula com validação e até 2 correções → relatório), `ia.py` (schemas de saída estrita), `falso.py`
+  (IA sem rede para testes). Prompts versionados em `estudio/prompts/*.md`. IA isolada em `services/llm.py`
+  (provedor **OpenAI**, `LLM_PROVIDER=openai`, modelo e preço no `.env`; cada chamada vira um `ChamadaLLM` com custo).
 - `estudio/` área do criador (editor com formulário gerado do schema + prévia ao vivo, reordenação por arrastar, importador).
 - `aprendizado/` página do player (matrícula/progresso entram na F3). `catalogo/` home ("em construção" até a F4) e `/saude/`.
 - `static/js/player/` **player** em ES modules (motor genérico + um componente por tipo em `blocos/`). Nunca carregue os

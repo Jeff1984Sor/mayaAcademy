@@ -12,6 +12,14 @@
             onsubmit="return confirm('Gerar áudio de {{ estimativa.blocos }} bloco(s) (~{{ estimativa.caracteres }} caracteres)?')">
         {% csrf_token %}<button class="btn-sec" {% if not estimativa.blocos %}disabled title="Áudios em dia"{% endif %}>🎙 Gerar áudios ({{ estimativa.blocos }})</button>
       </form>
+      {% if aula.geracao_info %}
+        <form method="post" action="{% url 'geracao:aula_de_novo' aula.geracao_info.pk %}" class="flex gap-1"
+              onsubmit="return confirm('Gerar esta aula de novo com a IA? Os blocos e as questões dela serão substituídos.')">
+          {% csrf_token %}<input type="hidden" name="voltar" value="aula">
+          <input name="instrucao" placeholder="Instrução extra (opcional)" maxlength="500" class="w-48 py-1 text-sm" aria-label="Instrução extra para gerar de novo">
+          <button class="btn-sec">↻ Gerar de novo (IA)</button>
+        </form>
+      {% endif %}
     </div>
   </div>
 

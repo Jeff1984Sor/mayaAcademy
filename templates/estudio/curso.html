@@ -11,6 +11,7 @@
       <a class="btn-sec" href="{% url 'estudio:curso_editar' curso.pk %}">✎ Dados do curso</a>
       <a class="btn-sec" href="{% url 'estudio:questoes' curso.pk %}">❓ Questões ({{ n_questoes }})</a>
       <a class="btn-sec" href="{% url 'estudio:curso_exportar' curso.pk %}">⬇ Exportar roteiro</a>
+      {% with ger=curso.geracoes.first %}{% if ger %}<a class="btn-sec" href="{% url 'geracao:detalhe' ger.pk %}">📄 Relatório e custo da geração</a>{% endif %}{% endwith %}
       <a class="btn-sec" href="{% url 'estudio:curso_pacote' curso.pk %}" title="HTML5 + SCORM 1.2: abre no computador, em sites e em LMS">📦 Baixar pacote (SCORM)</a>
     </div>
   </div>

@@ -29,6 +29,19 @@ Próximo passo: instalar em **produção** e passar pelo **GATE 2**.
 - **Download do curso** (pedido do Jefferson em 24/11): pacote HTML5 + SCORM 1.2 que abre em `file://`, em sites e em LMS.
 - 49 testes automatizados, todos passando. Percurso completo da aula no navegador (celular e desktop, claro e escuro), sem erros de console.
 
+**F2.5 — Gerador de curso a partir de PDF**
+- Tela "Curso a partir de PDF": um ou mais PDFs (limite `PDF_LIMITE_PAGINAS`, padrão 300), público, nível, tom, duração,
+  nº de módulos, nomes do narrador e do mascote, e a declaração de direito de uso (vai para o AuditLog).
+- Pipeline no Celery com barra de progresso: extração por página (OCR com Tesseract nas páginas sem texto, se instalado),
+  mapa do conteúdo por trechos, ementa proposta → **gate do criador** (editar, reordenar, dividir, juntar, excluir).
+- Só depois de "Aprovar e gerar aulas" o curso é criado (rascunho) e cada aula é gerada numa chamada própria, só com as
+  páginas de origem. Saída validada pelo mesmo registro de blocos do importador; até 2 correções com os erros; se ainda
+  falhar, a aula fica "precisa de revisão" sem travar as outras (N11, N12, N13).
+- Questões de fixação e de prova por aula, sempre com página de origem. Bloco sem origem recebe o selo "⚠ além do PDF".
+- Relatório (aulas, problemas, páginas não aproveitadas, OCR) e painel de custo (cada chamada com tokens, custo e duração,
+  mais a estimativa do TTS). "Ver trecho do PDF" no bloco e "Gerar de novo" a aula com instrução extra.
+- IA: **OpenAI** (pedido do Jefferson em 24/11), isolada em `services/llm.py`.
+
 ### Falta
 
 - Remover a hml do servidor; instalar prod, DNS de `academy.mayacorp.com.br` e certbot → **GATE 1**.
@@ -38,6 +51,8 @@ Próximo passo: instalar em **produção** e passar pelo **GATE 2**.
 
 ### Decisões tomadas (com o motivo)
 
+- **24/11: IA da OpenAI** no gerador por PDF (a especificação sugeria Anthropic). Modelo e preço ficam no `.env`
+  (`OPENAI_MODEL`, `LLM_PRECO_ENTRADA_1M`, `LLM_PRECO_SAIDA_1M`), para trocar sem mexer no código.
 - **24/11: sem homologação.** Ambiente único = produção (`academy.mayacorp.com.br`, branch `main`), por decisão do Jefferson.
   A hml chegou a ser instalada (`/home/deploy/mayaacademy/hml`) e deve ser removida do servidor. O Gate 2 acontece em produção.
 
